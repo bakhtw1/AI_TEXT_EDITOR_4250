@@ -1,0 +1,28 @@
+{
+  "name": "ai-text-editor",
+  "version": "1.0.0",
+  "description": "An AI editor that will give you a blowjob",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bakhtw1/AI_TEXT_EDITOR_4250.git"
+  },
+  "keywords": [
+    "AI",
+    "Open-Source",
+    "Blowjob"
+  ],
+  "author": "Group 7",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bakhtw1/AI_TEXT_EDITOR_4250/issues"
+  },
+  "homepage": "https://github.com/bakhtw1/AI_TEXT_EDITOR_4250#readme",
+  "devDependencies": {
+    "electron": "^17.0.0"
+  }
+}
