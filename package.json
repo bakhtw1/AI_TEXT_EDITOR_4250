@@ -2,9 +2,20 @@
   "name": "ai-text-editor",
   "version": "1.0.0",
   "description": "An AI editor that will give you a blowjob",
-  "main": "main.js",
+  "main": "./dist/main.js",
   "scripts": {
     "start": "electron .",
+    "dev": "npm-run-all -p dev:react electron:serve",
+    "dev:electron": "cross-env NODE_ENV=development webpack --config webpack/electron.webpack.ts --mode=development && npm run start:electron",
+    "dev:react": "cross-env NODE_ENV=development webpack serve --config webpack/react.webpack.ts --mode=development",
+    "electron:serve": "wait-on http-get://localhost:4000/ && npm run dev:electron",
+    "start:electron": "electron .",
+    "build": "npm-run-all build:electron build:react",
+    "build:run": "npm-run-all build start:electron",
+    "build:electron": "webpack --config webpack/electron.webpack.ts --mode=production",
+    "build:react": "webpack --config webpack/react.webpack.ts --mode=production",
+    "package": "npm-run-all build package:dist",
+    "package:dist": "electron-builder --dir",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +34,32 @@
   },
   "homepage": "https://github.com/bakhtw1/AI_TEXT_EDITOR_4250#readme",
   "devDependencies": {
-    "electron": "^17.0.0"
+    "@types/electron": "^1.6.10",
+    "@types/node": "^17.0.17",
+    "@types/react": "^17.0.39",
+    "@types/react-dom": "^17.0.11",
+    "@types/webpack-dev-server": "^4.7.2",
+    "copy-webpack-plugin": "^10.2.4",
+    "cross-env": "^7.0.3",
+    "electron": "^17.0.0",
+    "html-webpack-plugin": "^5.5.0",
+    "npm-run-all": "^4.1.5",
+    "ts-loader": "^9.2.6",
+    "ts-node": "^10.5.0",
+    "typescript": "^4.5.5",
+    "wait-on": "^6.0.1",
+    "webpack": "^5.68.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@monaco-editor/react": "^4.3.1",
+    "@mui/material": "^5.4.0",
+    "monaco-editor": "^0.32.1",
+    "monaco-editor-webpack-plugin": "^7.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
   }
 }
