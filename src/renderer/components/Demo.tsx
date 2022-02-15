@@ -1,11 +1,11 @@
-import * as React from 'react';
+import React, { useRef } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Editor, {Monaco, useMonaco, loader} from "@monaco-editor/react";
+import { Box, TextField } from '@mui/material';
+import Editor, {Monaco, useMonaco, loader } from "@monaco-editor/react";
 import path from 'path';
-import { Thenable } from 'monaco-editor';
+import * as mon from 'monaco-editor';
 
 
 const someJSCodeExample = `
@@ -75,22 +75,38 @@ function uriFromPath(_path: string) {
 }
 
 function EditorThing() {
-  // const monaco = useMonaco();
-  const path_to_me = "node_modules/monaco-editor/min/vs";
   
+  const path_to_monaco = "node_modules/monaco-editor/min/vs";
+  const editorRef = useRef<mon.editor.IStandaloneCodeEditor | null>(null);
+  console.log(path.resolve(path.join(__dirname, '../../../' ,path_to_monaco)));
   loader.config({
     paths: {
-      vs: path.resolve(path_to_me)
+      vs: path.resolve(path.join(__dirname, '../../../' ,path_to_monaco))
     }
   }); 
 
+  function handleEditorWillMount(monaco: Monaco) {
+    // here is the monaco instance
+    // do something before editor is mounted
+    monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
+  }
+
+  function handleEditorDidMount(editor: mon.editor.IStandaloneCodeEditor, monaco: Monaco) {
+    // here is the editor instance
+    // you can store it in `useRef` for further usage
+    editorRef.current = editor; 
+  }
+
   return(<Editor
     height="80vh"
-    theme="vs-dark"
+    theme="vs-light"
     path="script.js"
     defaultLanguage="javascript"
     defaultValue={someJSCodeExample}
+    beforeMount={handleEditorWillMount}
+    onMount={handleEditorDidMount}
   />);
+
 
 }
 
@@ -110,15 +126,24 @@ export default function BasicTabs() {
           <Tab label="Item Three" {...a11yProps(2)} />
         </Tabs>
       </Box>
-      <TabPanel value={value} index={0}>
-        <EditorThing />
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        <EditorThing />
-      </TabPanel>
+      <div style={{ display: value === 0? 'block': 'none'}}>
+        <TabPanel value={value} index={0}>
+          <TextField id="outlined-basic" label="Outlined" variant="outlined" />
+          <EditorThing />
+        </TabPanel>
+      </div>
+      <div style={{ display: value === 1? 'block': 'none'}}>
+        <TabPanel value={value} index={1}>
+          <TextField id="outlined-basic" label="Outlined" variant="outlined" />
+          <EditorThing />
+        </TabPanel>
+      </div>
+      <div style={{ display: value === 2? 'block': 'none'}}>
       <TabPanel value={value} index={2}>
+        <TextField id="outlined-basic" label="Outlined" variant="outlined" />
         <EditorThing />
       </TabPanel>
+      </div>
     </Box>
   );
 }

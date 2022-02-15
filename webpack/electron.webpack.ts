@@ -32,7 +32,7 @@ const config: Configuration = {
     filename: "[name].js",
   },
   plugins: [
-
+    new MonacoEditorWebpackPlugin()
   ]
 };
 

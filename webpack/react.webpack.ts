@@ -34,6 +34,9 @@ const config: Configuration = {
       },
     ],
   },
+  node: {
+    __dirname: true,
+  },
   devServer: {
     static: {
       directory: path.resolve(rootPath, "dist/renderer"),
@@ -49,7 +52,9 @@ const config: Configuration = {
   },
   plugins: [
     new HtmlWebpackPlugin({ template: path.resolve(rootPath, "index.html") }),
+    new MonacoEditorWebpackPlugin()
   ],
+  
 };
 
 export default config;
