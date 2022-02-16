@@ -78,11 +78,10 @@ function EditorThing() {
   
   const path_to_monaco = "node_modules/monaco-editor/min/vs";
   const editorRef = useRef<mon.editor.IStandaloneCodeEditor | null>(null);
-  console.log(__dirname)
-  console.log(path.resolve(path.join(__dirname, '../../../' ,path_to_monaco)));
+
   loader.config({
     paths: {
-      vs: path.resolve(path.join(__dirname, '../../../' ,path_to_monaco))
+      vs: uriFromPath(path.join(__dirname, '../../../' ,path_to_monaco))
     }
   }); 
 
