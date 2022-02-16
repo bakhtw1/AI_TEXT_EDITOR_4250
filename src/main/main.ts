@@ -3,7 +3,7 @@ import * as path from "path";
 import * as url from "url";
 
 let mainWindow: Electron.BrowserWindow | null;
-
+console.log(__dirname)
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1100,

@@ -34,6 +34,7 @@ const config: Configuration = {
       },
     ],
   },
+  context: path.resolve(rootPath),
   node: {
     __dirname: true,
   },

@@ -78,12 +78,17 @@ function EditorThing() {
   
   const path_to_monaco = "node_modules/monaco-editor/min/vs";
   const editorRef = useRef<mon.editor.IStandaloneCodeEditor | null>(null);
+  console.log(__dirname)
   console.log(path.resolve(path.join(__dirname, '../../../' ,path_to_monaco)));
   loader.config({
     paths: {
       vs: path.resolve(path.join(__dirname, '../../../' ,path_to_monaco))
     }
   }); 
+
+  function handleEditorChange(value: string, event: any) {
+    console.log(value);
+  }
 
   function handleEditorWillMount(monaco: Monaco) {
     // here is the monaco instance
@@ -94,6 +99,7 @@ function EditorThing() {
   function handleEditorDidMount(editor: mon.editor.IStandaloneCodeEditor, monaco: Monaco) {
     // here is the editor instance
     // you can store it in `useRef` for further usage
+    console.log("Hello");
     editorRef.current = editor; 
   }
 
@@ -105,6 +111,7 @@ function EditorThing() {
     defaultValue={someJSCodeExample}
     beforeMount={handleEditorWillMount}
     onMount={handleEditorDidMount}
+    onChange={handleEditorChange}
   />);
 
 
