@@ -2,11 +2,11 @@ import React, { useRef } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import { Box, TextField } from '@mui/material';
+import { Box, TextField, Button } from '@mui/material';
 import Editor, {Monaco, useMonaco, loader } from "@monaco-editor/react";
 import path from 'path';
 import * as mon from 'monaco-editor';
-
+import { ipcRenderer } from 'electron';
 
 const someJSCodeExample = `
   // The source (has been changed) is https://github.com/facebook/react/issues/5465#issuecomment-157888325
@@ -134,19 +134,40 @@ export default function BasicTabs() {
       </Box>
       <div style={{ display: value === 0? 'block': 'none'}}>
         <TabPanel value={value} index={0}>
-          <TextField id="outlined-basic" label="Outlined" variant="outlined" />
+          <Button
+            onClick={async () => {
+              const result = await ipcRenderer.invoke('test-ipc');
+              console.log(result);
+            }}
+          >
+            Click me
+          </Button>
           <EditorThing />
         </TabPanel>
       </div>
       <div style={{ display: value === 1? 'block': 'none'}}>
         <TabPanel value={value} index={1}>
-          <TextField id="outlined-basic" label="Outlined" variant="outlined" />
+          <Button
+            onClick={async () => {
+              const result = await ipcRenderer.invoke('test-ipc');
+              console.log(result);
+            }}
+          >
+            Click me
+          </Button>
           <EditorThing />
         </TabPanel>
       </div>
       <div style={{ display: value === 2? 'block': 'none'}}>
       <TabPanel value={value} index={2}>
-        <TextField id="outlined-basic" label="Outlined" variant="outlined" />
+          <Button
+            onClick={async () => {
+              const result = await ipcRenderer.invoke('test-ipc');
+              console.log(result);
+            }}
+          >
+            Click me
+          </Button>
         <EditorThing />
       </TabPanel>
       </div>
