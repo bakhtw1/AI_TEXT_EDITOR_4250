@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, KeyboardEvent } from 'react';
 import Editor, {Monaco, loader } from "@monaco-editor/react";
 import path from 'path';
 import * as mon from 'monaco-editor';
@@ -8,7 +8,8 @@ interface EditorProps {
   path:string
   data:string
   filename:string
-  ext:string
+  ext:string,
+  editHandler:any
 }
 
 function ensureFirstBackSlash(str: string) {
@@ -34,7 +35,7 @@ export default function EditorComponent(props:EditorProps) {
   }); 
 
   function handleEditorChange(value: string, event: any) {
-    console.log(value);
+    props.editHandler(value);
   }
 
   function handleEditorWillMount(monaco: Monaco) {
@@ -45,17 +46,25 @@ export default function EditorComponent(props:EditorProps) {
     editorRef.current = editor; 
   }
 
+  const keyDownHandle = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.ctrlKey && event.code === 'KeyS') {
+      console.log("Saving");
+    }
+  };
+
   return(
-    <Editor
-      height="90vh"
-      theme="vs-dark"
-      path={props.filename}
-      defaultLanguage={extentions[props.ext]}
-      defaultValue={props.data}
-      beforeMount={handleEditorWillMount}
-      onMount={handleEditorDidMount}
-      onChange={handleEditorChange}
-    />
+    <div onKeyDown={keyDownHandle}>
+      <Editor
+        height="90vh"
+        theme="vs-dark"
+        path={props.filename}
+        defaultLanguage={extentions[props.ext]}
+        defaultValue={props.data}
+        beforeMount={handleEditorWillMount}
+        onMount={handleEditorDidMount}
+        onChange={handleEditorChange}
+      />
+    </div>
   );
   
 }

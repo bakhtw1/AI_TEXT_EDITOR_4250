@@ -19,7 +19,8 @@ interface EditorPanelProps {
     filename:string
     ext:string
   }>,
-  changeHandler: any
+  changeHandler: any,
+  editHandler: any
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -70,7 +71,8 @@ export default function EditorPanel(props:EditorPanelProps) {
               data={child.data} 
               path={child.path} 
               filename={child.filename} 
-              ext={child.ext}/>
+              ext={child.ext}
+              editHandler={props.editHandler}/>
           </TabPanel>)
         }
       </Box>

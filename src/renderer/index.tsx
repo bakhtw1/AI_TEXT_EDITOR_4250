@@ -1,7 +1,6 @@
 import React, { useState, SyntheticEvent } from "react";
 import { render } from "react-dom";
 import { StyledEngineProvider } from '@mui/material/styles';
-import Demo from './components/Demo';
 import EditorPanel from "./components/EditorPanel";
 import CustomMenu from "./components/Menu";
 
@@ -31,6 +30,16 @@ function App() {
     }
   };
 
+  const editHandler = (data:string) => {
+    let newTabContent = [...tabContent];
+    newTabContent.forEach(ntc => {
+      if (ntc.id === value) {
+        ntc.data = data;
+      }
+    });
+    setAddTabContent(newTabContent);
+  }
+
   const addTab = (
     data:string="empty file", 
     path:string="untitled", 
@@ -54,7 +63,11 @@ function App() {
   return(
     <StyledEngineProvider injectFirst>
       <CustomMenu openFileEvent={addTab}/>
-      <EditorPanel content={tabContent} value={value} changeHandler={handleTabChange}/>
+      <EditorPanel 
+        content={tabContent} 
+        value={value} 
+        changeHandler={handleTabChange}
+        editHandler={editHandler}/>
     </StyledEngineProvider>
   );
 
