@@ -1,6 +1,7 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog } from "electron";
 import * as path from "path";
 import * as url from "url";
+import FileOps from "./fileops"
 
 let mainWindow: Electron.BrowserWindow | null;
 console.log(__dirname)
@@ -13,7 +14,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       devTools: process.env.NODE_ENV !== "production",
-      webSecurity: false
+      webSecurity: false,
     },
   });
 
@@ -32,6 +33,9 @@ function createWindow() {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  const fileOps = new FileOps();
+  fileOps.attachHandles();
 }
 
 // This method will be called when Electron has finished
