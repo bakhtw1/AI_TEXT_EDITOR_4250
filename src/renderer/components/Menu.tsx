@@ -1,5 +1,5 @@
 import { Box, Grid, Button, Menu, MenuItem } from '@mui/material';  
-import React, { SyntheticEvent, Component, MouseEvent, useState } from 'react';
+import React, { MouseEvent, useState } from 'react';
 import { ipcRenderer } from 'electron';
 import path from 'path';
 interface MenuProps {

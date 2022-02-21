@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import Editor, {Monaco, loader } from "@monaco-editor/react";
 import path from 'path';
 import * as mon from 'monaco-editor';
-import { MosqueTwoTone } from '@mui/icons-material';
 import { extentions } from './extensions';
 
 interface EditorProps {
