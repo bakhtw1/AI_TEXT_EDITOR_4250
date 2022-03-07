@@ -1,4 +1,4 @@
-import { Tabs, Tab, Box, Typography } from '@mui/material';  
+import { Tabs, Tab, Box, Grid } from '@mui/material';  
 import { Add } from '@mui/icons-material';
 import React, { SyntheticEvent, useState } from 'react';
 import EditorComponent from './Editor';
@@ -73,8 +73,8 @@ export default function EditorPanel() {
             <EditorComponent 
               file={f}
             />
-          </TabPanel>)
-        }
+          </TabPanel>
+        )}
       </Box>
     </div>
   );
