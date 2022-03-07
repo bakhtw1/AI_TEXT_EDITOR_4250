@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog } from "electron";
 import * as path from "path";
 import * as url from "url";
-import FileOps from "./fileops"
+import { setupHandlers } from "../renderer/components/FileSystem";
 
 let mainWindow: Electron.BrowserWindow | null;
 console.log(__dirname)
@@ -34,8 +34,7 @@ function createWindow() {
     mainWindow = null;
   });
 
-  const fileOps = new FileOps();
-  fileOps.attachHandles();
+  setupHandlers();
 }
 
 // This method will be called when Electron has finished

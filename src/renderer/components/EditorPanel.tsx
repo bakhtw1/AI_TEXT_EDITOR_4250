@@ -2,25 +2,12 @@ import { Tabs, Tab, Box, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import React, { SyntheticEvent, useState } from 'react';
 import EditorComponent from './Editor';
+import { AppFile, useFileSystem } from './FileSystem';
 
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
-}
-
-interface EditorPanelProps {
-  value: number,
-  content: Array<{
-    key:number, 
-    id:number, 
-    data:string, 
-    path:string, 
-    filename:string
-    ext:string
-  }>,
-  changeHandler: any,
-  editHandler: any
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -50,29 +37,42 @@ function a11yProps(index: number) {
   };
 }
 
-export default function EditorPanel(props:EditorPanelProps) {
+export default function EditorPanel() {
+  const fileSystem = useFileSystem();
+
+  const handleTabChange = (event: SyntheticEvent<Element, Event>, newTabId: number) => {
+    if (newTabId === -1) {
+      fileSystem?.newFile();
+    } else {
+      fileSystem?.setCurrentFileIdx(newTabId);
+    }
+  };
 
   return (
     <div>
       <Tabs
-        value={props.value}
-        onChange={props.changeHandler}
+        value={fileSystem?.currentFileIdx || 0}
+        onChange={handleTabChange}
         variant="scrollable"
       >
-        {props.content.map((child: any) => 
-          <Tab label={child.filename} {...a11yProps(child.id)} />)
-        }
-        <Tab icon={<Add />} value={-1}/>
+        {fileSystem?.files.map((f: AppFile, index: number) => 
+          <Tab 
+            label={f.name} 
+            key={index}
+            {...a11yProps(index)} 
+          />
+        )}
+        <Tab 
+          icon={<Add />} 
+          value={-1}
+        />
       </Tabs> 
       <Box>
-        {props.content.map((child: any) => 
-          <TabPanel value={props.value} index={child.id} key={child.key}>
+        {fileSystem?.files.map((f: AppFile, index: number) => 
+          <TabPanel value={fileSystem.currentFileIdx} index={index} key={index}>
             <EditorComponent 
-              data={child.data} 
-              path={child.path} 
-              filename={child.filename} 
-              ext={child.ext}
-              editHandler={props.editHandler}/>
+              file={f}
+            />
           </TabPanel>)
         }
       </Box>

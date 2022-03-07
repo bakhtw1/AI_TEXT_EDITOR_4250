@@ -1,27 +1,23 @@
 import { Box, Grid, Button, Menu, MenuItem } from '@mui/material';  
 import React, { MouseEvent, useState } from 'react';
-import { ipcRenderer } from 'electron';
-import path from 'path';
-interface MenuProps {
-  openFileEvent: any
-}
+import { useFileSystem } from './FileSystem';
 
-export default function CustomMenu(props: MenuProps) {
+export default function CustomMenu() {
   return (
     <Box sx={{flexGrow: 1}}>
       <Grid container>
         <Grid item xs={8}>
-          <FileMenu openFileEvent={props.openFileEvent}/>
+          <FileMenu />
         </Grid>
       </Grid>
     </Box>
   );  
 }
 
-function FileMenu(props: MenuProps) {
-  
+function FileMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const fileSystem = useFileSystem();
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -30,16 +26,6 @@ function FileMenu(props: MenuProps) {
   const handleClose = () => { 
     setAnchorEl(null);
   };
-
-  const openFile = async () => {
-    const filepath = await ipcRenderer.invoke('file-dialog-handle');
-    const filecontents = await ipcRenderer.invoke('file-contents-handle', filepath.filePaths[0]);
-    const fpath = filepath.filePaths[0];
-    const basename = path.basename(fpath);
-    const ext = path.extname(basename);
-    
-    props.openFileEvent(filecontents, path, basename, ext);
-  }
 
   return ( 
     <div>
@@ -62,7 +48,21 @@ function FileMenu(props: MenuProps) {
           'aria-labelledby': 'basic-button',
         }}
       >
-        <MenuItem onClick={openFile}>Open</MenuItem>
+        <MenuItem onClick={async function() {
+          await fileSystem?.openFile(null);
+        }}>
+          Open
+        </MenuItem>
+        <MenuItem onClick={async function() {
+          await fileSystem?.files[fileSystem.currentFileIdx].save();
+        }}>
+          Save
+        </MenuItem>
+        <MenuItem onClick={async function() {
+          await fileSystem?.files[fileSystem.currentFileIdx].saveAs();
+        }}>
+          Save As
+        </MenuItem>
       </Menu>
     </div>
   );

@@ -3,13 +3,10 @@ import Editor, {Monaco, loader } from "@monaco-editor/react";
 import path from 'path';
 import * as mon from 'monaco-editor';
 import { extentions } from './extensions';
+import { AppFile, useFileSystem } from './FileSystem';
 
 interface EditorProps {
-  path:string
-  data:string
-  filename:string
-  ext:string,
-  editHandler:any
+  file: AppFile
 }
 
 function ensureFirstBackSlash(str: string) {
@@ -20,13 +17,15 @@ function ensureFirstBackSlash(str: string) {
   
 function uriFromPath(_path: string) {
   const pathName = path.resolve(_path).replace(/\\/g, "/");
+
   return encodeURI("file://" + ensureFirstBackSlash(pathName));
 }
   
-export default function EditorComponent(props:EditorProps) {
-  
+export default function EditorComponent(props: EditorProps) {
   const path_to_monaco = "node_modules/monaco-editor/min/vs";
   const editorRef = useRef<mon.editor.IStandaloneCodeEditor | null>(null);
+
+  const fileSystem = useFileSystem();
 
   loader.config({
     paths: {
@@ -35,7 +34,7 @@ export default function EditorComponent(props:EditorProps) {
   }); 
 
   function handleEditorChange(value: string, event: any) {
-    props.editHandler(value);
+    fileSystem?.updateFile(props.file, value);
   }
 
   function handleEditorWillMount(monaco: Monaco) {
@@ -46,9 +45,9 @@ export default function EditorComponent(props:EditorProps) {
     editorRef.current = editor; 
   }
 
-  const keyDownHandle = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.ctrlKey && event.code === 'KeyS') {
-      console.log("Saving");
+  const keyDownHandle = async (event: KeyboardEvent<HTMLDivElement>) => {
+    if ((event.ctrlKey || event.metaKey) && event.code === 'KeyS') {
+      await fileSystem?.files[fileSystem.currentFileIdx].save();
     }
   };
 
@@ -57,14 +56,13 @@ export default function EditorComponent(props:EditorProps) {
       <Editor
         height="90vh"
         theme="vs-dark"
-        path={props.filename}
-        defaultLanguage={extentions[props.ext]}
-        defaultValue={props.data}
+        path={props.file.path}
+        defaultLanguage={extentions[props.file.extension]}
+        defaultValue={props.file.content}
         beforeMount={handleEditorWillMount}
         onMount={handleEditorDidMount}
         onChange={handleEditorChange}
       />
     </div>
   );
-  
 }
