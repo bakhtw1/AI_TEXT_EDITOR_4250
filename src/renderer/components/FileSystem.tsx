@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 async function showOpenDialog() {
     return await dialog.showOpenDialog({
-        properties: ['openFile', 'multiSelections']
+        properties: ['openFile', 'multiSelections', 'openDirectory']
     });
 }
 
@@ -78,13 +78,51 @@ export class AppFile {
     }
 }
 
+export class FileTreeItem {
+    path: string;
+    directory: boolean;
+    children: FileTreeItem[];
+    explored: boolean;
+
+    get name(): string {
+        return path.basename(this.path);
+    }
+
+    constructor(path: string, directory: boolean) {
+        this.path = path;
+        this.directory = directory;
+        this.explored = false;
+
+        this.children = [];
+    }
+
+    public async explore() {
+        if (!this.directory) {
+            return;
+        }
+
+        const fsChildren = await fs.readdir(this.path);
+
+        for (const fsItem of fsChildren) {
+            const newPath = path.join(this.path, fsItem);
+            const stats = await fs.lstat(newPath);
+
+            this.children.push(new FileTreeItem(newPath, stats.isDirectory()));
+        }
+
+        this.explored = true;
+    }
+}
+
 interface IAppFileSystem {
     files: AppFile[],
-    openFile: (path?: string) => void,
+    open: (item?: FileTreeItem) => void,
     newFile: () => void,
     updateFile: (file: AppFile, content: string) => void,
     currentFileIdx: number,
     setCurrentFileIdx: (idx: number) => void,
+    explorerTree: FileTreeItem[],
+    exploreDirectory: (treeItem: FileTreeItem, replace: boolean) => void
 }
 
 const FileSystemContext = createContext<IAppFileSystem | null>(null);
@@ -95,11 +133,14 @@ interface FileSystemProviderProps {
 
 export function FileSystemProvider(props: FileSystemProviderProps) {
     const [files, setFiles] = useState<AppFile[]>([new AppFile()]);
+    const [fileCount, setFileCount] = useState(1);
     const [currentFileIdx, setCurrentFileIdx] = useState(0);
+    const [explorerTree, setExplorerTree] = useState<FileTreeItem[]>([]);
+    const [baseDirectory, setBaseDirectory] = useState('');
 
     useEffect(() => {
         ipcRenderer.on('menu-open', async function() {
-            await openFile();
+            await open();
         });
         ipcRenderer.on('menu-save', async function() {
             await files[currentFileIdx].save();
@@ -109,18 +150,32 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         });
     }, []);
 
-    async function openFile(path?: string) {
-        if (!path) {
-            const res = await ipcRenderer.invoke('show-open-dialog');
+    useEffect(() => {
+        if (files.length != fileCount) {
+            setCurrentFileIdx(files.length - 1);
 
-            path = res.filePaths[0] as string;
+            setFileCount(files.length);
+        }
+    }, [files]);
+
+    async function open(item?: FileTreeItem) {
+        if (!item) {
+            const res = await ipcRenderer.invoke('show-open-dialog');
+            const path = res.filePaths[0] as string;
 
             if (!path) {
                 return;
             }
+
+            const stats = await fs.lstat(path);
+            item = new FileTreeItem(path, stats.isDirectory());
+
+            if (item.directory) {
+                return await exploreDirectory(item, true);
+            }
         }
 
-        let newAppFile = new AppFile(path);
+        let newAppFile = new AppFile(item.path);
         await newAppFile.open();
 
         setFiles([
@@ -148,13 +203,48 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         setFiles(newFiles);
     }
 
+    async function exploreDirectory(treeItem: FileTreeItem, replace: boolean = false) { 
+        if (replace) {
+            await treeItem.explore();
+            setBaseDirectory(treeItem.path);
+            setExplorerTree([...treeItem.children]);
+            return;
+        }
+
+        const relativePath = treeItem.path.slice(baseDirectory.length);
+        const pathParts = relativePath.split(path.sep).filter((v) => v !== '').reverse();
+        const depth = pathParts.length;
+
+        let fileTree = [...explorerTree];
+        let curLevel = fileTree;
+
+        for (let i = 0; i < depth; i++) {
+            for (const levelItem of curLevel) {
+                if (levelItem.name == pathParts[pathParts.length - 1]) {
+                    if (levelItem.path == treeItem.path) {
+                        await levelItem.explore();
+                    }
+
+                    curLevel = levelItem.children;
+                    pathParts.pop();
+
+                    break;
+                }
+            }
+        }
+
+        setExplorerTree(fileTree);
+    }
+
     const fileSystem: IAppFileSystem = {
         files,
-        openFile,
+        open,
         newFile,
         updateFile,
         currentFileIdx,
         setCurrentFileIdx,
+        explorerTree,
+        exploreDirectory,
     }
 
     return (

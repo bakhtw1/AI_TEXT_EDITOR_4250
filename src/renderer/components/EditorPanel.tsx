@@ -50,39 +50,32 @@ export default function EditorPanel() {
 
   return (
     <div>
-      <Grid container spacing={0}>
-        <Grid item xs={3}>
-
-        </Grid>
-        <Grid item xs={9}>
-          <Tabs
-            value={fileSystem?.currentFileIdx || 0}
-            onChange={handleTabChange}
-            variant="scrollable"
-          >
-            {fileSystem?.files.map((f: AppFile, index: number) => 
-              <Tab 
-                label={f.name} 
-                key={index}
-                {...a11yProps(index)} 
-              />
-            )}
-            <Tab 
-              icon={<Add />} 
-              value={-1}
+      <Tabs
+        value={fileSystem?.currentFileIdx || 0}
+        onChange={handleTabChange}
+        variant="scrollable"
+      >
+        {fileSystem?.files.map((f: AppFile, index: number) => 
+          <Tab 
+            label={f.name} 
+            key={index}
+            {...a11yProps(index)} 
+          />
+        )}
+        <Tab 
+          icon={<Add />} 
+          value={-1}
+        />
+      </Tabs> 
+      <Box>
+        {fileSystem?.files.map((f: AppFile, index: number) => 
+          <TabPanel value={fileSystem.currentFileIdx} index={index} key={index}>
+            <EditorComponent 
+              file={f}
             />
-          </Tabs> 
-          <Box>
-            {fileSystem?.files.map((f: AppFile, index: number) => 
-              <TabPanel value={fileSystem.currentFileIdx} index={index} key={index}>
-                <EditorComponent 
-                  file={f}
-                />
-              </TabPanel>
-            )}
-          </Box>
-        </Grid>
-      </Grid>
+          </TabPanel>
+        )}
+      </Box>
     </div>
   );
 
