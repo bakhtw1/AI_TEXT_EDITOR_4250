@@ -1,4 +1,4 @@
-import { Tabs, Tab, Box, Typography } from '@mui/material';  
+import { Tabs, Tab, Box, Grid } from '@mui/material';  
 import { Add } from '@mui/icons-material';
 import React, { SyntheticEvent, useState } from 'react';
 import EditorComponent from './Editor';
@@ -50,32 +50,39 @@ export default function EditorPanel() {
 
   return (
     <div>
-      <Tabs
-        value={fileSystem?.currentFileIdx || 0}
-        onChange={handleTabChange}
-        variant="scrollable"
-      >
-        {fileSystem?.files.map((f: AppFile, index: number) => 
-          <Tab 
-            label={f.name} 
-            key={index}
-            {...a11yProps(index)} 
-          />
-        )}
-        <Tab 
-          icon={<Add />} 
-          value={-1}
-        />
-      </Tabs> 
-      <Box>
-        {fileSystem?.files.map((f: AppFile, index: number) => 
-          <TabPanel value={fileSystem.currentFileIdx} index={index} key={index}>
-            <EditorComponent 
-              file={f}
+      <Grid container spacing={0}>
+        <Grid item xs={3}>
+
+        </Grid>
+        <Grid item xs={9}>
+          <Tabs
+            value={fileSystem?.currentFileIdx || 0}
+            onChange={handleTabChange}
+            variant="scrollable"
+          >
+            {fileSystem?.files.map((f: AppFile, index: number) => 
+              <Tab 
+                label={f.name} 
+                key={index}
+                {...a11yProps(index)} 
+              />
+            )}
+            <Tab 
+              icon={<Add />} 
+              value={-1}
             />
-          </TabPanel>)
-        }
-      </Box>
+          </Tabs> 
+          <Box>
+            {fileSystem?.files.map((f: AppFile, index: number) => 
+              <TabPanel value={fileSystem.currentFileIdx} index={index} key={index}>
+                <EditorComponent 
+                  file={f}
+                />
+              </TabPanel>
+            )}
+          </Box>
+        </Grid>
+      </Grid>
     </div>
   );
 

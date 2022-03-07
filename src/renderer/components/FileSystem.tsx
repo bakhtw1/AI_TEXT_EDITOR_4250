@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { ipcMain, dialog, ipcRenderer } from 'electron';
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 async function showOpenDialog() {
     return await dialog.showOpenDialog({
@@ -80,7 +80,7 @@ export class AppFile {
 
 interface IAppFileSystem {
     files: AppFile[],
-    openFile: (path: string | null) => void,
+    openFile: (path?: string) => void,
     newFile: () => void,
     updateFile: (file: AppFile, content: string) => void,
     currentFileIdx: number,
@@ -97,8 +97,20 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
     const [files, setFiles] = useState<AppFile[]>([new AppFile()]);
     const [currentFileIdx, setCurrentFileIdx] = useState(0);
 
-    async function openFile(path: string | null) {
-        if (path == null) {
+    useEffect(() => {
+        ipcRenderer.on('menu-open', async function() {
+            await openFile();
+        });
+        ipcRenderer.on('menu-save', async function() {
+            await files[currentFileIdx].save();
+        });
+        ipcRenderer.on('menu-save-as', async function() {
+            await files[currentFileIdx].saveAs();
+        });
+    }, []);
+
+    async function openFile(path?: string) {
+        if (!path) {
             const res = await ipcRenderer.invoke('show-open-dialog');
 
             path = res.filePaths[0] as string;
