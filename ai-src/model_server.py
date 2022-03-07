@@ -1,13 +1,9 @@
-
-# import torch
 from transformers import GPTNeoForCausalLM, GPT2Tokenizer
-# from crypt import methods
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B").to("cuda")
 tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
-
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -29,5 +25,4 @@ def predict():
 if __name__ == '__main__':
     # run app in debug mode on port 5000
     app.run(debug=True, port=5000)
-
 
