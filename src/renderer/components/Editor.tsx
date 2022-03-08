@@ -52,6 +52,10 @@ export default function EditorComponent(props: EditorProps) {
     if ((event.ctrlKey || event.metaKey) && event.code === 'KeyS') {
       await props.file.save();
     }
+
+    if ((event.ctrlKey || event.metaKey) && event.code === 'Enter') {
+      await assistantManager?.execute(editorRef.current!);
+    }
   };
 
   return(
