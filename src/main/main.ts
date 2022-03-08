@@ -1,6 +1,8 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog, Menu } from "electron";
 import * as path from "path";
 import * as url from "url";
+import { setupHandlers } from "../renderer/components/FileSystem";
+import { buildMenu } from "./menu";
 
 let mainWindow: Electron.BrowserWindow | null;
 console.log(__dirname)
@@ -13,7 +15,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       devTools: process.env.NODE_ENV !== "production",
-      webSecurity: false
+      webSecurity: false,
     },
   });
 
@@ -32,6 +34,13 @@ function createWindow() {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  setupHandlers();
+  Menu.setApplicationMenu(buildMenu(mainWindow));
+
+  if (process.env.NODE_ENV !== 'production') {
+    mainWindow.webContents.openDevTools();
+  }
 }
 
 // This method will be called when Electron has finished
