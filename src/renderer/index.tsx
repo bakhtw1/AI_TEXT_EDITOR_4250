@@ -5,6 +5,7 @@ import EditorPanel from "./components/EditorPanel";
 import { FileSystemProvider, useFileSystem } from "./components/FileSystem";
 import { Grid } from "@mui/material";
 import FileTreePanel from "./components/FileTreePanel";
+import { AssistantManagerProvider } from "./components/AssistantManager";
 
 const root = document.createElement("div");
 
@@ -15,7 +16,9 @@ function App() {
   return (
     <StyledEngineProvider injectFirst>
       <FileSystemProvider>
-        <Main />
+        <AssistantManagerProvider>
+          <Main />
+        </AssistantManagerProvider>
       </FileSystemProvider>
     </StyledEngineProvider>
   );

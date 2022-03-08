@@ -4,6 +4,7 @@ import path from 'path';
 import * as mon from 'monaco-editor';
 import { extentions } from './extensions';
 import { AppFile, useFileSystem } from './FileSystem';
+import { useAssistantManager } from './AssistantManager';
 
 interface EditorProps {
   file: AppFile
@@ -26,6 +27,7 @@ export default function EditorComponent(props: EditorProps) {
   const editorRef = useRef<mon.editor.IStandaloneCodeEditor | null>(null);
 
   const fileSystem = useFileSystem();
+  const assistantManager = useAssistantManager();
 
   loader.config({
     paths: {
@@ -35,6 +37,7 @@ export default function EditorComponent(props: EditorProps) {
 
   function handleEditorChange(value: string, event: any) {
     fileSystem?.updateFile(props.file, value);
+    assistantManager?.handleEditorValueChange(editorRef.current!, value);
   }
 
   function handleEditorWillMount(monaco: Monaco) {
@@ -47,7 +50,7 @@ export default function EditorComponent(props: EditorProps) {
 
   const keyDownHandle = async (event: KeyboardEvent<HTMLDivElement>) => {
     if ((event.ctrlKey || event.metaKey) && event.code === 'KeyS') {
-      await fileSystem?.files[fileSystem.currentFileIdx].save();
+      await props.file.save();
     }
   };
 
