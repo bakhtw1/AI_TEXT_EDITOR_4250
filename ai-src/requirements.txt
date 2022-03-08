@@ -1,0 +1,8 @@
+transformers
+flask
+torch
+
+# Build requirements
+pybind11
+wheel
+PyYAML
