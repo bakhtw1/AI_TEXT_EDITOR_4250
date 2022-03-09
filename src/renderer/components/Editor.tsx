@@ -104,7 +104,7 @@ export default function EditorComponent(props: EditorProps) {
       await props.file.save();
     }
 
-    if (event.shiftKey && event.code === 'Enter') {
+    if (event.shiftKey && (event.code === 'Enter' || event.code === 'NumpadEnter')) {
       console.log("Executing");
       await assistantManager?.execute(editorRef.current!);
     }

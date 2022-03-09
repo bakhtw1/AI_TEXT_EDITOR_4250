@@ -100,6 +100,10 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     }
 
     async function execute(editor: mon.editor.IStandaloneCodeEditor) {
+        if (!available) {
+            return;
+        }
+        
         const content = editor.getValue();
         const position = editor.getPosition();
         const lines = content.split('\n');
