@@ -104,7 +104,8 @@ export default function EditorComponent(props: EditorProps) {
       await props.file.save();
     }
 
-    if ((event.ctrlKey || event.metaKey) && event.code === 'Enter') {
+    if (event.shiftKey && event.code === 'Enter') {
+      console.log("Executing");
       await assistantManager?.execute(editorRef.current!);
     }
   };
@@ -112,7 +113,7 @@ export default function EditorComponent(props: EditorProps) {
   return(
     <div onKeyDown={keyDownHandle}>
       <Editor
-        height="90vh"
+        height="90vh" 
         theme="vs-dark"
         path={props.file.path}
         defaultLanguage={language}
