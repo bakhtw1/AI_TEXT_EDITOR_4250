@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { ipcMain, dialog, ipcRenderer } from 'electron';
+import { ipcMain, dialog, ipcRenderer, Menu, IpcMainInvokeEvent, IpcRendererEvent, BrowserWindow } from 'electron';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 async function showOpenDialog() {
@@ -13,9 +13,28 @@ async function showSaveDialog() {
     return await dialog.showSaveDialog({})
 }
 
+async function showFileExplorerContextMenu(event: IpcMainInvokeEvent, ...args: any[]) {
+    if (args.length == 0) {
+        return;
+    }
+
+    const mainWindow = BrowserWindow.getFocusedWindow();
+    const fileTreeItem = args[0] as FileTreeItem;
+
+    Menu.buildFromTemplate([
+        {
+            label: 'Rename',
+            click: function() {
+                mainWindow?.webContents.send('set-rename-item', fileTreeItem);
+            }
+        }
+    ]).popup();
+}
+
 export function setupHandlers() {
     ipcMain.handle('show-open-dialog', showOpenDialog);
     ipcMain.handle('show-save-dialog', showSaveDialog);
+    ipcMain.handle('show-fx-context', showFileExplorerContextMenu);
 }
 
 export class AppFile {
@@ -122,7 +141,11 @@ interface IAppFileSystem {
     currentFileIdx: number,
     setCurrentFileIdx: (idx: number) => void,
     explorerTree: FileTreeItem[],
-    exploreDirectory: (treeItem: FileTreeItem, replace: boolean) => void
+    exploreDirectory: (treeItem: FileTreeItem, replace: boolean) => void,
+    currentRenamingTreeItem: FileTreeItem | null,
+    setCurrentRenamingTreeItem: (item: FileTreeItem | null) => void,
+    renameTreeItem: (newName: string) => void,
+    updateFileTree: () => void,
 }
 
 const FileSystemContext = createContext<IAppFileSystem | null>(null);
@@ -137,6 +160,7 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
     const [currentFileIdx, setCurrentFileIdx] = useState(0);
     const [explorerTree, setExplorerTree] = useState<FileTreeItem[]>([]);
     const [baseDirectory, setBaseDirectory] = useState('');
+    const [currentRenamingTreeItem, setCurrentRenamingTreeItem] = useState<FileTreeItem | null>(null);
 
     useEffect(() => {
         ipcRenderer.on('menu-open', async function() {
@@ -144,9 +168,21 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         });
         ipcRenderer.on('menu-save', async function() {
             await files[currentFileIdx].save();
+
+            updateFileTree();
         });
         ipcRenderer.on('menu-save-as', async function() {
             await files[currentFileIdx].saveAs();
+
+            updateFileTree();
+        });
+        ipcRenderer.on('set-rename-item', function(event: IpcRendererEvent, ...args: any[]) {
+            if (args.length == 0) {
+                setCurrentRenamingTreeItem(null);
+            } else {
+                const treeItem = args[0] as FileTreeItem;
+                setCurrentRenamingTreeItem(treeItem);
+            }
         });
     }, []);
 
@@ -203,6 +239,23 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         setFiles(newFiles);
     }
 
+    function updateFileTree() {
+        const currentPaths = explorerTree.map((item) => item.path);
+        let newExplorerTree = [...explorerTree];
+
+        for (const file of files) {
+            if (!currentPaths.includes(file.path)) {
+                newExplorerTree.push(new FileTreeItem(file.path, false));
+            }
+        }
+
+        setExplorerTree(newExplorerTree);
+    }
+
+    function findExplorerItem(item: FileTreeItem) {
+        
+    }
+
     async function exploreDirectory(treeItem: FileTreeItem, replace: boolean = false) { 
         if (replace) {
             await treeItem.explore();
@@ -236,6 +289,42 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         setExplorerTree(fileTree);
     }
 
+    async function renameTreeItem(newName: string) {
+        if (currentRenamingTreeItem == null) {
+            return;
+        }
+
+        const currentPath = currentRenamingTreeItem.path;
+        const newPath = path.join(path.dirname(currentRenamingTreeItem.path), newName);
+
+        await fs.rename(currentPath, newPath);
+
+        const relativePath = currentRenamingTreeItem.path.slice(baseDirectory.length);
+        const pathParts = relativePath.split(path.sep).filter((v) => v !== '').reverse();
+        const depth = pathParts.length;
+
+        let fileTree = [...explorerTree];
+        let curLevel = fileTree;
+
+        for (let i = 0; i < depth; i++) {
+            for (const levelItem of curLevel) {
+                if (levelItem.name == pathParts[pathParts.length - 1]) {
+                    if (levelItem.path == currentRenamingTreeItem.path) {
+                        levelItem.path = newPath;
+                    }
+
+                    curLevel = levelItem.children;
+                    pathParts.pop();
+
+                    break;
+                }
+            }
+        }
+
+        setExplorerTree(fileTree);
+        setCurrentRenamingTreeItem(null);
+    }
+
     const fileSystem: IAppFileSystem = {
         files,
         open,
@@ -245,6 +334,10 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         setCurrentFileIdx,
         explorerTree,
         exploreDirectory,
+        currentRenamingTreeItem,
+        setCurrentRenamingTreeItem,
+        renameTreeItem,
+        updateFileTree,
     }
 
     return (

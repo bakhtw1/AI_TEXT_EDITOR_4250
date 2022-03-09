@@ -51,6 +51,8 @@ export default function EditorComponent(props: EditorProps) {
   const keyDownHandle = async (event: KeyboardEvent<HTMLDivElement>) => {
     if ((event.ctrlKey || event.metaKey) && event.code === 'KeyS') {
       await props.file.save();
+
+      fileSystem?.updateFileTree();
     }
 
     if ((event.ctrlKey || event.metaKey) && event.code === 'Enter') {
@@ -62,7 +64,7 @@ export default function EditorComponent(props: EditorProps) {
     <div onKeyDown={keyDownHandle}>
       <Editor
         height="90vh"
-        theme="vs-dark"
+        // theme="vs-dark"
         path={props.file.path}
         defaultLanguage={extentions[props.file.extension]}
         defaultValue={props.file.content}
