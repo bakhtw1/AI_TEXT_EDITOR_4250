@@ -1,12 +1,15 @@
 import axios from 'axios';
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as mon from 'monaco-editor';
 
-const KEY_PHRASE = '@ai-help:';
+export const KEY_PHRASE = '@ai-help:';
+const SERVER_HOST = "http://127.0.0.1:5000";
 
 interface IAssistantManager {
     handleEditorValueChange: (editor: mon.editor.IStandaloneCodeEditor, value: string) => void,
-    execute: (editor: mon.editor.IStandaloneCodeEditor) => void
+    execute: (editor: mon.editor.IStandaloneCodeEditor) => void,
+    available: boolean,
+    getAssists: () => Promise<string[]>,
 }
 
 const AssistantManagerContext = createContext<IAssistantManager | null>(null);
@@ -20,19 +23,64 @@ interface AssistantManagerProviderProps {
 }
 
 export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
-    const httpRequest = axios.create({
-        baseURL: "http://localhost:5000",
-        headers: {"Content-type": "application/json"}
-    });
+    // TODO: set this to server health
+    const [available, setAvailable] = useState(false);
+
+    useEffect(() => {
+        function waitForAvailable() {
+            setTimeout(async () => {
+                const running = await getHealth();
+    
+                if (running) {
+                    setAvailable(true);
+                } else {
+                    waitForAvailable();
+                }
+            }, 5000);
+        }
+
+        waitForAvailable();
+    }, []);
 
     async function sendRequest(data: string): Promise<string> {
         let dataBody: QueryData = {
             prompt : data
         };
 
+        const httpRequest = axios.create({
+            baseURL: SERVER_HOST,
+            headers: {"Content-type": "application/json"}
+        });
+
         const res = await httpRequest.post("/predict", dataBody);
         
         return res.data as string;
+    }
+
+    async function getAssists(): Promise<string[]> {
+        const httpRequest = axios.create({
+            baseURL: SERVER_HOST,
+            headers: {"Content-type": "application/json"}
+        });
+
+        const res = await httpRequest.get('/prompts');
+
+        return res.data as string[];
+    }
+
+    async function getHealth(): Promise<boolean> {
+        const httpRequest = axios.create({
+            baseURL: SERVER_HOST,
+            headers: {"Content-type": "application/json"}
+        });
+        
+        try {
+            await httpRequest.get('/health');
+
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     function handleEditorValueChange(editor: mon.editor.IStandaloneCodeEditor, value: string) {
@@ -47,11 +95,15 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         const keyPhraseBuffer = line.slice(contentPosition!.column - KEY_PHRASE.length, contentPosition!.column);
 
         if (keyPhraseBuffer == KEY_PHRASE) {
-            console.log('Key phrase detected!');
+            editor.trigger(null, 'editor.action.triggerSuggest', {});
         }
     }
 
     async function execute(editor: mon.editor.IStandaloneCodeEditor) {
+        if (!available) {
+            return;
+        }
+        
         const content = editor.getValue();
         const position = editor.getPosition();
         const lines = content.split('\n');
@@ -75,6 +127,8 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     const assistantManager: IAssistantManager = {
         handleEditorValueChange,
         execute,
+        available,
+        getAssists,
     }
 
     return (
