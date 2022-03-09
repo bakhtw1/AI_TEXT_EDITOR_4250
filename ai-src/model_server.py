@@ -1,5 +1,6 @@
 from transformers import GPTNeoForCausalLM, GPT2Tokenizer
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import torch
 
 
@@ -27,10 +28,23 @@ class HuggingFaceGPTJ(torch.nn.Module):
 
 
 app = Flask(__name__)
+CORS(app)
 
 # model = HuggingFaceGPTJ(MODEL_NAME)
 model = GPTNeoForCausalLM.from_pretrained(MODEL_NAME)
 tokenizer = GPT2Tokenizer.from_pretrained(MODEL_NAME)
+
+
+@app.route('/prompts', methods=['GET'])
+def prompts():
+    return jsonify([
+        'Generate function body'
+    ])
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    return ''
 
 
 @app.route('/predict', methods=['POST'])

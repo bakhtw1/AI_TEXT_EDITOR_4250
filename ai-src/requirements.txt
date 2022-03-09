@@ -1,5 +1,6 @@
 transformers
 flask
+flask_cors
 torch
 
 # Build requirements

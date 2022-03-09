@@ -28,7 +28,7 @@ export class AppFile {
     }
 
     get extension(): string {
-        return path.extname(this.path);
+        return path.extname(this.path).slice(1);
     }
 
     constructor(path?: string) {
