@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import TreeView from '@mui/lab/TreeView';
@@ -9,6 +9,8 @@ import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { useFileSystem, FileTreeItem } from './FileSystem';
+import { ipcRenderer, Menu } from 'electron';
+import TextField from '@mui/material/TextField';
 
 const StyledTreeItemRoot = styled(function CustomTreeItem(props: TreeItemProps & {item: FileTreeItem}) {
     return (
@@ -61,6 +63,20 @@ function StyledTreeItem(props: StyledTreeItemProps) {
     } = props;
 
     const fileSystem = useFileSystem();
+    const textFieldRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        window.addEventListener('click', async (event: MouseEvent) => {
+            const node = event.target as Node;
+            if (textFieldRef.current && !textFieldRef.current.contains(node)) {
+                if (textFieldRef.current.value === '') {
+                    fileSystem?.setCurrentRenamingTreeItem(null);
+                } else {
+                    await fileSystem?.renameTreeItem(textFieldRef.current.value);
+                }
+            }
+        })
+    }, [fileSystem?.currentRenamingTreeItem]);
 
     return (
         <StyledTreeItemRoot
@@ -81,12 +97,23 @@ function StyledTreeItem(props: StyledTreeItemProps) {
                     }
                 }
             }}
+            onContextMenu={async (event: React.MouseEvent) => {
+                await ipcRenderer.invoke('show-fx-context', item);
+            }}
             label={
                 <Box sx={{ display: 'flex', alignItems: 'center', p: 0.5, pr: 0 }}>
                     <Box component={item.directory ? FolderIcon : TextSnippetIcon} color="inherit" sx={{ mr: 1 }} />
-                    <Typography variant="body2" sx={{ fontWeight: 'inherit', flexGrow: 1 }}>
-                        {item.name}
-                    </Typography>
+                    {item.path === fileSystem?.currentRenamingTreeItem?.path ? (
+                        <TextField 
+                            variant="outlined"
+                            size='small'
+                            inputRef={textFieldRef}
+                        />
+                    ) : (
+                        <Typography variant="body2" sx={{ fontWeight: 'inherit', flexGrow: 1 }}>
+                            {item.name}
+                        </Typography>
+                    )}
                 </Box>
             }
             nodeId={item.path}
@@ -123,7 +150,7 @@ export default function FileTreePanel() {
             />
             <TreeView
                 sx={{ 
-                    height: 264, 
+                    height: "90vh", 
                     flexGrow: 1, 
                     overflowY: 'auto' 
                 }}
