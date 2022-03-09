@@ -1,4 +1,7 @@
 {
+    "exclude": [
+      "ai-src"
+    ],
     "compilerOptions": {
       "target": "es2021",
       "module": "commonjs",
