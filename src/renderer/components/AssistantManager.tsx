@@ -122,6 +122,9 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         const result = await sendRequest(data);
 
         console.log(result);
+        
+        editor.trigger('keyboard', 'type', {text: result});
+        
     }
 
     const assistantManager: IAssistantManager = {
