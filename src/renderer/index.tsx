@@ -28,7 +28,10 @@ function Main() {
   const fileSystem = useFileSystem();
 
   return (
-    <Grid container spacing={1}>
+    <Grid 
+      container 
+      spacing={3}
+    >
       {fileSystem!.explorerTree.length > 0 && (
         <Grid item xs={3}>
           <FileTreePanel />
