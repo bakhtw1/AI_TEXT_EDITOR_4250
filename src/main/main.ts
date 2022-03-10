@@ -1,11 +1,12 @@
 import { app, BrowserWindow, dialog, Menu } from "electron";
 import * as path from "path";
 import * as url from "url";
+import { setupAssistantServer, startAssistantServer } from "../renderer/components/AssistantManager";
 import { setupHandlers } from "../renderer/components/FileSystem";
 import { buildMenu } from "./menu";
 
 let mainWindow: Electron.BrowserWindow | null;
-console.log(__dirname)
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1100,
@@ -34,6 +35,9 @@ function createWindow() {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  setupAssistantServer();
+  startAssistantServer();
 
   setupHandlers();
   Menu.setApplicationMenu(buildMenu(mainWindow));

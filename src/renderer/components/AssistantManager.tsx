@@ -1,9 +1,46 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as mon from 'monaco-editor';
+import path from 'path';
+import { spawn, spawnSync } from 'child_process';
+import fs from 'fs';
 
 export const KEY_PHRASE = '@ai-help:';
-const SERVER_HOST = "http://127.0.0.1:5000";
+const SERVER_HOST = "http://127.0.0.1:5001";
+const BASE_PATH = path.join(__dirname, 'assistant');
+
+export function setupAssistantServer() {
+    const alreadySetUp = fs.existsSync(path.join(BASE_PATH, 'venv'));
+    if (alreadySetUp) {
+        return;
+    }
+
+    spawnSync('bash', 
+        [   
+            path.join(BASE_PATH, 'setup_env.sh'),
+            BASE_PATH
+        ])
+}
+
+export function startAssistantServer() {
+    const serverProcess = spawn('bash', 
+        [
+            path.join(BASE_PATH, 'run_model_server.sh'),
+            BASE_PATH
+        ]);
+    
+    serverProcess.stdout.on('data', (data) => {
+        console.log(`serverProcess stdout:\n${data}`);
+    });
+    
+    serverProcess.stderr.on('data', (data) => {
+        console.error(`serverProcess stderr:\n${data}`);
+    });
+}
+
+function cacheBuster(url: string): string {
+    return `${url}?cb=${Date.now()}`;
+}
 
 interface IAssistantManager {
     handleEditorValueChange: (editor: mon.editor.IStandaloneCodeEditor, value: string) => void,
@@ -23,7 +60,6 @@ interface AssistantManagerProviderProps {
 }
 
 export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
-    // TODO: set this to server health
     const [available, setAvailable] = useState(false);
 
     useEffect(() => {
@@ -33,6 +69,7 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     
                 if (running) {
                     setAvailable(true);
+                    console.log('AI server ready!')
                 } else {
                     waitForAvailable();
                 }
@@ -42,40 +79,30 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         waitForAvailable();
     }, []);
 
+    const httpRequest = axios.create({
+        baseURL: SERVER_HOST,
+        headers: {"Content-type": "application/json"}
+    });
+
     async function sendRequest(data: string): Promise<string> {
         let dataBody: QueryData = {
             prompt : data
         };
 
-        const httpRequest = axios.create({
-            baseURL: SERVER_HOST,
-            headers: {"Content-type": "application/json"}
-        });
-
-        const res = await httpRequest.post("/predict", dataBody);
+        const res = await httpRequest.post(cacheBuster("/predict") , dataBody);
         
         return res.data as string;
     }
 
     async function getAssists(): Promise<string[]> {
-        const httpRequest = axios.create({
-            baseURL: SERVER_HOST,
-            headers: {"Content-type": "application/json"}
-        });
-
-        const res = await httpRequest.get('/prompts');
+        const res = await httpRequest.get(cacheBuster('/prompts'));
 
         return res.data as string[];
     }
 
     async function getHealth(): Promise<boolean> {
-        const httpRequest = axios.create({
-            baseURL: SERVER_HOST,
-            headers: {"Content-type": "application/json"}
-        });
-        
         try {
-            await httpRequest.get('/health');
+            await httpRequest.get(cacheBuster('/health'));
 
             return true;
         } catch {
