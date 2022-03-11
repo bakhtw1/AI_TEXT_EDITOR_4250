@@ -1,4 +1,4 @@
-const extentions: { [key:string]:string} = {
+const extensions: { [key: string]: string } = {
   "abap": "ABAP",
   "asc": "Public Key",
   "ash": "AGS Script",
@@ -845,4 +845,4 @@ const extentions: { [key:string]:string} = {
   "prw": "xBase"
 }
 
-export { extentions };
+export { extensions };

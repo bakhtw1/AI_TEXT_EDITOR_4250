@@ -1,6 +1,6 @@
 {
     "exclude": [
-      "ai-src"
+      "assistant_server"
     ],
     "compilerOptions": {
       "target": "es2021",

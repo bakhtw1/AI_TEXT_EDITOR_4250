@@ -9,4 +9,4 @@ then
     PYTHON_EXECUTABLE="python"
 fi
 
-FLASK_ENV=development $PYTHON_EXECUTABLE $BASEPATH/model_server.py
+FLASK_ENV=development $PYTHON_EXECUTABLE $BASEPATH/server.py

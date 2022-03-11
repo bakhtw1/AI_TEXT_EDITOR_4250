@@ -2,7 +2,7 @@ import React, { useRef, KeyboardEvent, useEffect } from 'react';
 import Editor, {Monaco, loader } from "@monaco-editor/react";
 import path from 'path';
 import * as mon from 'monaco-editor';
-import { extentions } from './extensions';
+import { extensions } from '../config/extensions';
 import { AppFile, useFileSystem } from './FileSystem';
 import { KEY_PHRASE, useAssistantManager } from './AssistantManager';
 
@@ -45,7 +45,7 @@ export default function EditorComponent(props: EditorProps) {
     }
   }); 
 
-  const language = extentions[props.file.extension]?.toLowerCase() || '';
+  const language = extensions[props.file.extension]?.toLowerCase() || '';
 
   function handleEditorChange(value: string, event: any) {
     fileSystem?.updateFile(props.file, value);
