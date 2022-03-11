@@ -36,21 +36,17 @@ const config: Configuration = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'ai-src/scripts/*',
+          from: 'assistant_server/scripts/*',
           to: 'assistant/[name][ext]'
         },
         {
-          from: 'ai-src/*.py',
+          from: 'assistant_server/src/*.py',
           to: 'assistant/[name][ext]'
         },
         {
-          from: 'ai-src/requirements.txt',
+          from: 'assistant_server/requirements.txt',
           to: 'assistant/requirements.txt'
-        },
-        // {
-        //   from: 'ai-src/SHARK/build',
-        //   to: 'assistant/SHARK/build'
-        // },
+        }
       ]
   })
   ]

@@ -1,12 +1,53 @@
-import { app, BrowserWindow, dialog, Menu } from "electron";
+import { app, BrowserWindow, Menu } from "electron";
 import * as path from "path";
 import * as url from "url";
-import { setupAssistantServer, startAssistantServer } from "../renderer/components/AssistantManager";
-import { setupHandlers } from "../renderer/components/FileSystem";
-import { buildMenu } from "./menu";
+
+import assistantServer from './assistant_server';
+import fileSystem from './file_system';
 
 const isMac = process.platform === 'darwin';
 let mainWindow: Electron.BrowserWindow | null;
+const isMac = process.platform === 'darwin';
+
+const applicationMenuTemplate: any[] = [
+  ...(isMac ? [{
+  label: app.name,
+  submenu: [
+      { role: 'about' },
+      { type: 'separator' },
+      { role: 'services' },
+      { type: 'separator' },
+      { role: 'hide' },
+      { role: 'hideOthers' },
+      { role: 'unhide' },
+      { type: 'separator' },
+      { role: 'quit' }
+  ]
+  }] : []),
+  {
+      label: 'File',
+      submenu: [
+          {
+              label: 'Open',
+              click: function() {
+                  mainWindow!.webContents.send('menu-open');
+              },
+          },
+          {
+              label: 'Save',
+              click: function() {
+                  mainWindow!.webContents.send('menu-save');
+              },
+          },
+          {
+              label: 'Save As',
+              click: function() {
+                  mainWindow!.webContents.send('menu-save-as');
+              },
+          }
+      ]
+  }
+];
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -38,12 +79,13 @@ function createWindow() {
   });
 
   if (isMac) {
-    setupAssistantServer();
-    startAssistantServer();
+    assistantServer.start();
   }
+  
+  fileSystem.setupHandlers();
 
-  setupHandlers();
-  Menu.setApplicationMenu(buildMenu(mainWindow));
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate(applicationMenuTemplate));
 
   if (process.env.NODE_ENV !== 'production') {
     mainWindow.webContents.openDevTools();

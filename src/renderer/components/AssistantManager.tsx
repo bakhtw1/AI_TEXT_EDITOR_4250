@@ -1,42 +1,9 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as mon from 'monaco-editor';
-import path from 'path';
-import { spawn, spawnSync } from 'child_process';
-import fs from 'fs';
 
 export const KEY_PHRASE = '@ai-help';
 const SERVER_HOST = "http://127.0.0.1:5001";
-const BASE_PATH = path.join(__dirname, 'assistant');
-
-export function setupAssistantServer() {
-    const alreadySetUp = fs.existsSync(path.join(BASE_PATH, 'venv'));
-    if (alreadySetUp) {
-        return;
-    }
-
-    spawnSync('bash', 
-        [   
-            path.join(BASE_PATH, 'setup_env.sh'),
-            BASE_PATH
-        ])
-}
-
-export function startAssistantServer() {
-    const serverProcess = spawn('bash', 
-        [
-            path.join(BASE_PATH, 'run_model_server.sh'),
-            BASE_PATH
-        ]);
-    
-    serverProcess.stdout.on('data', (data) => {
-        console.log(`serverProcess stdout:\n${data}`);
-    });
-    
-    serverProcess.stderr.on('data', (data) => {
-        console.error(`serverProcess stderr:\n${data}`);
-    });
-}
 
 function cacheBuster(url: string): string {
     return `${url}?cb=${Date.now()}`;
@@ -166,9 +133,6 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         console.log(newValue);
 
         editor.setValue(newValue);
-        
-        // editor.trigger('keyboard', 'type', {text: result});
-        
     }
 
     const assistantManager: IAssistantManager = {

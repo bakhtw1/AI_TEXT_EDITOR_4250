@@ -1,6 +1,6 @@
 import { Tabs, Tab, Box, Grid } from '@mui/material';  
 import { Add } from '@mui/icons-material';
-import React, { SyntheticEvent, useState } from 'react';
+import React, { SyntheticEvent } from 'react';
 import EditorComponent from './Editor';
 import { AppFile, useFileSystem } from './FileSystem';
 
@@ -78,7 +78,6 @@ export default function EditorPanel() {
       </Box>
     </div>
   );
-
 }
 
 
