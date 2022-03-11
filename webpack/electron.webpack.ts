@@ -32,7 +32,27 @@ const config: Configuration = {
     filename: "[name].js",
   },
   plugins: [
-    new MonacoEditorWebpackPlugin()
+    new MonacoEditorWebpackPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'ai-src/scripts/*',
+          to: 'assistant/[name][ext]'
+        },
+        {
+          from: 'ai-src/*.py',
+          to: 'assistant/[name][ext]'
+        },
+        {
+          from: 'ai-src/requirements.txt',
+          to: 'assistant/requirements.txt'
+        },
+        // {
+        //   from: 'ai-src/SHARK/build',
+        //   to: 'assistant/SHARK/build'
+        // },
+      ]
+  })
   ]
 };
 

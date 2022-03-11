@@ -1,11 +1,13 @@
 import { app, BrowserWindow, dialog, Menu } from "electron";
 import * as path from "path";
 import * as url from "url";
+import { setupAssistantServer, startAssistantServer } from "../renderer/components/AssistantManager";
 import { setupHandlers } from "../renderer/components/FileSystem";
 import { buildMenu } from "./menu";
 
+const isMac = process.platform === 'darwin';
 let mainWindow: Electron.BrowserWindow | null;
-console.log(__dirname)
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1100,
@@ -34,6 +36,11 @@ function createWindow() {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  if (isMac) {
+    setupAssistantServer();
+    startAssistantServer();
+  }
 
   setupHandlers();
   Menu.setApplicationMenu(buildMenu(mainWindow));

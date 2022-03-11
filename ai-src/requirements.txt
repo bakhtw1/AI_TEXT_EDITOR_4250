@@ -2,8 +2,3 @@ transformers
 flask
 flask_cors
 torch
-
-# Build requirements
-pybind11
-wheel
-PyYAML
