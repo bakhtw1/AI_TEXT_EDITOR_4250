@@ -107,8 +107,12 @@ export default function EditorComponent(props: EditorProps) {
     }
 
     if (event.shiftKey && (event.code === 'Enter' || event.code === 'NumpadEnter')) {
+      editorRef.current?.updateOptions({ readOnly: true });
+
       console.log("Executing");
       await assistantManager?.execute(editorRef.current!);
+      
+      editorRef.current?.updateOptions({ readOnly: false });
     }
   };
 

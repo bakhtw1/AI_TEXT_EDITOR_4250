@@ -1,18 +1,4 @@
--f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
---pre
-
 transformers
 flask
 flask_cors
 torch
-torchvision
-absl-py
-
-# Non Apple M1 packages
-iree-compiler; sys_platform != 'darwin' or platform_machine != 'arm64'
-iree-runtime; sys_platform != 'darwin' or platform_machine != 'arm64'
-
-# Build requirements
-pybind11
-wheel
-PyYAML

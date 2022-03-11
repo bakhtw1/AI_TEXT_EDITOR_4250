@@ -5,7 +5,7 @@ import path from 'path';
 import { spawn, spawnSync } from 'child_process';
 import fs from 'fs';
 
-export const KEY_PHRASE = '@ai-help:';
+export const KEY_PHRASE = '@ai-help';
 const SERVER_HOST = "http://127.0.0.1:5001";
 const BASE_PATH = path.join(__dirname, 'assistant');
 
@@ -136,7 +136,7 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         const lines = content.split('\n');
         
         const line = lines[position!.lineNumber - 1];
-        if (line.length < KEY_PHRASE.length) {
+        if (!line || line.length < KEY_PHRASE.length) {
             return;
         }
 
@@ -144,13 +144,30 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
             return;
         }
 
-        const data = line.slice(KEY_PHRASE.length).trim();
+        let data = "";
+        let loopLine = "";
+        let i = position!.lineNumber - 1;
+
+        do {
+            loopLine = lines[i];
+            data += loopLine + '\n';
+
+            i += 1;
+        } while (i < lines.length && loopLine.trim() != '');
+
+        data = data.slice(KEY_PHRASE.length).trim();
 
         const result = await sendRequest(data);
 
-        console.log(result);
+        let newValue = lines.slice(0, position!.lineNumber - 1).join('\n');
+        newValue += '\n' + result;
+        newValue += '\n' + lines.slice(i).join('\n');
+
+        console.log(newValue);
+
+        editor.setValue(newValue);
         
-        editor.trigger('keyboard', 'type', {text: result});
+        // editor.trigger('keyboard', 'type', {text: result});
         
     }
 
