@@ -5,6 +5,7 @@ import { setupAssistantServer, startAssistantServer } from "../renderer/componen
 import { setupHandlers } from "../renderer/components/FileSystem";
 import { buildMenu } from "./menu";
 
+const isMac = process.platform === 'darwin';
 let mainWindow: Electron.BrowserWindow | null;
 
 function createWindow() {
@@ -36,8 +37,10 @@ function createWindow() {
     mainWindow = null;
   });
 
-  setupAssistantServer();
-  startAssistantServer();
+  if (isMac) {
+    setupAssistantServer();
+    startAssistantServer();
+  }
 
   setupHandlers();
   Menu.setApplicationMenu(buildMenu(mainWindow));
