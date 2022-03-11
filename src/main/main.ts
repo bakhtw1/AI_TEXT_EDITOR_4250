@@ -5,6 +5,7 @@ import * as url from "url";
 import assistantServer from './assistant_server';
 import fileSystem from './file_system';
 
+const isMac = process.platform === 'darwin';
 let mainWindow: Electron.BrowserWindow | null;
 const isMac = process.platform === 'darwin';
 
@@ -77,8 +78,10 @@ function createWindow() {
     mainWindow = null;
   });
 
-  assistantServer.start();
-
+  if (isMac) {
+    assistantServer.start();
+  }
+  
   fileSystem.setupHandlers();
 
   Menu.setApplicationMenu(
