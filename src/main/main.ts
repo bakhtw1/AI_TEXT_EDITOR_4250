@@ -7,7 +7,6 @@ import fileSystem from './file_system';
 
 const isMac = process.platform === 'darwin';
 let mainWindow: Electron.BrowserWindow | null;
-const isMac = process.platform === 'darwin';
 
 const applicationMenuTemplate: any[] = [
   ...(isMac ? [{
