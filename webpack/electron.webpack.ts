@@ -40,8 +40,8 @@ const config: Configuration = {
           to: 'assistant/[name][ext]'
         },
         {
-          from: 'assistant_server/src/*.py',
-          to: 'assistant/[name][ext]'
+          from: 'assistant_server/src',
+          to: 'assistant/'
         },
         {
           from: 'assistant_server/requirements.txt',
