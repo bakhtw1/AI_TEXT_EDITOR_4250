@@ -1,1 +1,1 @@
-from . import gpt_neo
+from .model import ServerModel

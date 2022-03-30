@@ -1,6 +1,6 @@
 from transformers import GPTNeoForCausalLM, AutoTokenizer
 
-from .gpt_neo_types import GPTNeoModelType
+from .types import GPTNeoModelType
 from ..model import ServerModel
 
 
@@ -11,7 +11,7 @@ MODEL_MAPPING = dict([
 ])
 
 
-class PT_GPTNeo(ServerModel):
+class GPTNeo(ServerModel):
 
     def __init__(self, model_type):
         super().__init__(model_type)

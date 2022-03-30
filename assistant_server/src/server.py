@@ -1,14 +1,13 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-import models
+from models import ServerModel
 
 
 app = Flask(__name__)
 CORS(app)
 
-model = models.gpt_neo.PT_GPTNeo(
-    models.gpt_neo.GPTNeoModelType.medium)
+model = ServerModel.auto()
 
 
 @app.route('/prompts', methods=['GET'])

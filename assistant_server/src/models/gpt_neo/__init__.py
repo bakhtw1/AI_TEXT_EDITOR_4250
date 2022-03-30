@@ -1,4 +1,4 @@
-from .gpt_neo_types import GPTNeoModelType
-from .pt_gpt_neo import PT_GPTNeo
+from .types import GPTNeoModelType
+from .gpt_neo import GPTNeo
 
 
