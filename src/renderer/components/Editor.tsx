@@ -39,6 +39,20 @@ export default function EditorComponent(props: EditorProps) {
     }
   }, [completionItemProvider]);
 
+  useEffect(() => {
+    // Auto-save every 30 seconds
+    const timer = setInterval(async () => {
+      if (props.file.isNewFile) {
+        console.log('Not auto-saving (new file)')
+      } else {
+        console.log('auto-save')
+        await props.file.save();
+      }
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, [])
+
   loader.config({
     paths: {
       vs: uriFromPath(path.join(__dirname, '../../../' ,path_to_monaco))
