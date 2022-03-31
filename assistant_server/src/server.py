@@ -2,11 +2,22 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from models import ServerModel
+from database import Result, db
 
 
-app = Flask(__name__)
-CORS(app)
+def create_app():
+    app = Flask(__name__)
+    CORS(app)
 
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+    db.init_app(app)
+
+    db.create_all(app=app)
+
+    return app
+
+
+app = create_app()
 model = ServerModel.auto()
 
 
@@ -28,6 +39,13 @@ def predict():
     prompt = request_data['prompt']
 
     generated = model.generate(prompt)
+
+    r = Result(
+        prompt=prompt,
+        output=generated)
+
+    db.session.add(r)
+    db.session.commit()
 
     return generated
 
