@@ -6,7 +6,7 @@ import 'xterm/css/xterm.css';
 
 export default class TerminalComponent extends React.Component {
     terminalRef: RefObject<HTMLDivElement>;
-	terminal!: Terminal;
+    terminal!: Terminal;
     
     constructor(props: any) {
         super(props);
@@ -37,24 +37,20 @@ export default class TerminalComponent extends React.Component {
     }
 
     componentDidMount() {
-        
-		if (this.terminalRef.current) {
-			// Creates the terminal within the container element.
-			this.terminal.open(this.terminalRef.current);
-            
-		}
-	}
+        if (this.terminalRef.current) {
+            this.terminal.open(this.terminalRef.current);
+        }
+    }
 
-	componentWillUnmount() {
-		// When the component unmounts dispose of the terminal and all of its listeners.
-		this.terminal.dispose();
-	}
+    componentWillUnmount() {
+        this.terminal.dispose();
+    }
     
     render() {
-		return (
+        return (
             <div style={{backgroundColor: 'black',}} id="terminal" ref={this.terminalRef} />
         );
-	}
+    }
 }
 
 

@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import * as os from "os";
-const pty = require( "node-pty");
+import * as pty from "node-pty";
 
 export default function createTermProcess() {
     const mainWindow = BrowserWindow.getFocusedWindow();
@@ -10,7 +10,6 @@ export default function createTermProcess() {
         cols: 80,
         rows: 30,
         cwd: process.env.HOME,
-        env: process.env,
     });
 
     ptyProcess.on("data", (data: any) => {
