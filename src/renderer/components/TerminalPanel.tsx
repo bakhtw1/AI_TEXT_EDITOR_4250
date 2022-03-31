@@ -1,10 +1,8 @@
 import React, {createRef, RefObject} from "react";
-import { Terminal } from 'xterm';
+import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit';
 import { ipcRenderer } from "electron";
-// import 'xterm/css/xterm.css';
-
-import Box from "@mui/material/Box";
+import 'xterm/css/xterm.css';
 
 export default class TerminalComponent extends React.Component {
     terminalRef: RefObject<HTMLDivElement>;
@@ -18,8 +16,10 @@ export default class TerminalComponent extends React.Component {
         
         this.terminal = new Terminal({
             cursorBlink: true, 
-            rendererType: 'dom',
-            screenReaderMode: true,
+            rendererType: 'canvas',
+            screenReaderMode: true, 
+            convertEol: true,
+            cols: 80, 
         });
 
         this.terminal.loadAddon(fitAddon); 
@@ -37,11 +37,11 @@ export default class TerminalComponent extends React.Component {
     }
 
     componentDidMount() {
-        let element = document.getElementById('terminal');
-		if (element) {
+        
+		if (this.terminalRef.current) {
 			// Creates the terminal within the container element.
-			// this.terminal.open(this.terminalRef.current);
-            this.terminal.open(element);
+			this.terminal.open(this.terminalRef.current);
+            
 		}
 	}
 
@@ -52,9 +52,10 @@ export default class TerminalComponent extends React.Component {
     
     render() {
 		return (
-            // <Box sx={{width:"100%", backgroundColor: 'black'}} ref={this.terminalRef} />
             <div style={{backgroundColor: 'black',}} id="terminal" ref={this.terminalRef} />
         );
 	}
 }
+
+
 

@@ -119,7 +119,7 @@ export default function EditorComponent(props: EditorProps) {
   return(
     <div onKeyDown={keyDownHandle}>
       <Editor
-        height="90vh"
+        height="60vh"
         // theme="vs-dark"
         path={props.file.path}
         defaultLanguage={language}
