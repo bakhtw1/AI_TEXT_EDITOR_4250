@@ -22,6 +22,10 @@ const config: Configuration = {
           loader: "ts-loader",
         },
       },
+      {
+        test: /\.node$/,
+        loader: "node-loader",
+      }
     ],
   },
   node: {
@@ -31,6 +35,7 @@ const config: Configuration = {
     path: path.resolve(rootPath, "dist"),
     filename: "[name].js",
   },
+  
   plugins: [
     new MonacoEditorWebpackPlugin(),
     new CopyWebpackPlugin({

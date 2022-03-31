@@ -1,6 +1,8 @@
 import { app, BrowserWindow, Menu } from "electron";
 import * as path from "path";
 import * as url from "url";
+import createTermProcess from "./terminal";
+
 
 import assistantServer from './assistant_server';
 import fileSystem from './file_system';
@@ -82,6 +84,7 @@ function createWindow() {
   }
   
   fileSystem.setupHandlers();
+  createTermProcess(mainWindow);
 
   Menu.setApplicationMenu(
     Menu.buildFromTemplate(applicationMenuTemplate));
@@ -89,6 +92,7 @@ function createWindow() {
   if (process.env.NODE_ENV !== 'production') {
     mainWindow.webContents.openDevTools();
   }
+
 }
 
 // This method will be called when Electron has finished
