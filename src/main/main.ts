@@ -84,7 +84,7 @@ function createWindow() {
   }
   
   fileSystem.setupHandlers();
-  createTermProcess();
+  createTermProcess(mainWindow);
 
   Menu.setApplicationMenu(
     Menu.buildFromTemplate(applicationMenuTemplate));

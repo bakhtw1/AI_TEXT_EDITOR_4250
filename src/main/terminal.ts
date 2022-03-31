@@ -2,8 +2,7 @@ import { ipcMain, BrowserWindow } from 'electron';
 import * as os from "os";
 import * as pty from "node-pty";
 
-export default function createTermProcess() {
-    const mainWindow = BrowserWindow.getFocusedWindow();
+export default function createTermProcess(mainWindow: BrowserWindow) {
     var shell = os.platform() === "win32" ? "powershell.exe" : "bash";
     var ptyProcess = pty.spawn(shell, [], {
         name: "xterm-color",
@@ -19,5 +18,4 @@ export default function createTermProcess() {
     ipcMain.on("terminal-into", (event, data) => {
         ptyProcess.write(data);
     });
-
 }
