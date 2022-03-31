@@ -1,13 +1,15 @@
-import React, { useRef, KeyboardEvent, useEffect } from 'react';
+import React, { useRef, KeyboardEvent, useEffect, useState } from 'react';
 import Editor, {Monaco, loader } from "@monaco-editor/react";
 import path from 'path';
 import * as mon from 'monaco-editor';
 import { extensions } from '../config/extensions';
 import { AppFile, useFileSystem } from './FileSystem';
 import { KEY_PHRASE, useAssistantManager } from './AssistantManager';
+import { ThemeStyle, useColorScheme, useTheme } from '../config/Theme';
 
 interface EditorProps {
-  file: AppFile
+  file: AppFile,
+  height: number,
 }
 
 function ensureFirstBackSlash(str: string) {
@@ -26,6 +28,8 @@ export default function EditorComponent(props: EditorProps) {
   const path_to_monaco = "node_modules/monaco-editor/min/vs";
   const editorRef = useRef<mon.editor.IStandaloneCodeEditor | null>(null);
 
+  const colorScheme = useColorScheme();
+  const theme = useTheme();
   const fileSystem = useFileSystem();
   const assistantManager = useAssistantManager();
 
@@ -38,6 +42,22 @@ export default function EditorComponent(props: EditorProps) {
       }
     }
   }, [completionItemProvider]);
+
+  useEffect(() => {
+    // Auto-save every 30 seconds
+    const timer = setInterval(async () => {
+      if (props.file.isNewFile) {
+        console.log('Not auto-saving (new file)')
+      } else {
+        console.log('auto-save')
+        await props.file.save();
+      }
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  
 
   loader.config({
     paths: {
@@ -119,8 +139,8 @@ export default function EditorComponent(props: EditorProps) {
   return(
     <div onKeyDown={keyDownHandle}>
       <Editor
-        height="60vh"
-        // theme="vs-dark"
+        height={props.height}
+        theme={colorScheme == ThemeStyle.dark ? "vs-dark" : 'light'}
         path={props.file.path}
         defaultLanguage={language}
         defaultValue={props.file.content}
