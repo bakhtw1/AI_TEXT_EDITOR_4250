@@ -3,16 +3,29 @@ import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit';
 import { ipcRenderer } from "electron";
 import 'xterm/css/xterm.css';
+import { iTheme, ThemeStyle, useColorScheme, useTheme } from "../config/Theme";
 
-export default class TerminalComponent extends React.Component {
+export const TERMINAL_HEIGHT = 320;
+
+interface _TerminalComponentProps {
+    colorScheme: ThemeStyle;
+    theme: iTheme;
+}
+
+class _TerminalComponent extends React.Component<_TerminalComponentProps> {
     terminalRef: RefObject<HTMLDivElement>;
     terminal!: Terminal;
-    
-    constructor(props: any) {
-        super(props);
-        this.terminalRef = createRef();
 
-        const fitAddon = new FitAddon();
+    colorScheme: ThemeStyle;
+    theme: iTheme;
+    
+    constructor(props: _TerminalComponentProps) {
+        super(props);
+
+        this.colorScheme = props.colorScheme;
+        this.theme = props.theme;
+
+        this.terminalRef = createRef();
         
         this.terminal = new Terminal({
             cursorBlink: true, 
@@ -20,9 +33,13 @@ export default class TerminalComponent extends React.Component {
             screenReaderMode: true, 
             convertEol: true,
             cols: 80, 
+            theme: {
+                background: this.theme.colors.editorBackground,
+                foreground: this.theme.text.color,
+                cursor: this.theme.text.color
+            }
         });
 
-        this.terminal.loadAddon(fitAddon); 
         this.terminal.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ');
         
         this.terminal.onData((e:any) => {
@@ -32,13 +49,14 @@ export default class TerminalComponent extends React.Component {
         ipcRenderer.on('terminal-incData', (event, data) => {
             this.terminal.write(data);
         })
-        
-        fitAddon.fit();
     }
 
     componentDidMount() {
         if (this.terminalRef.current) {
+            const fitAddon = new FitAddon();
+            this.terminal.loadAddon(fitAddon); 
             this.terminal.open(this.terminalRef.current);
+            fitAddon.fit();
         }
     }
 
@@ -48,10 +66,27 @@ export default class TerminalComponent extends React.Component {
     
     render() {
         return (
-            <div style={{backgroundColor: 'black',}} id="terminal" ref={this.terminalRef} />
+            <div 
+                style={{
+                    backgroundColor: this.theme.colors.editorBackground,
+                    height: TERMINAL_HEIGHT
+                }} 
+                id="terminal" 
+                ref={this.terminalRef}
+            />
         );
     }
 }
 
+export default function TerminalComponent() {
+    const colorScheme = useColorScheme();
+    const theme = useTheme();
 
+    return (
+        <_TerminalComponent 
+            colorScheme={colorScheme}
+            theme={theme}
+        />
+    )
+}
 

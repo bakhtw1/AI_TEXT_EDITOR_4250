@@ -7,7 +7,7 @@ import { Button, Grid } from "@mui/material";
 import FileTreePanel from "./components/FileTreePanel";
 import { AssistantManagerProvider } from "./components/AssistantManager";
 import { Stack } from "@mui/material";
-import TerminalComponent from "./components/TerminalPanel";
+import TerminalComponent, { TERMINAL_HEIGHT } from "./components/TerminalPanel";
 import { useTheme } from "./config/Theme";
 
 import './styles/normalize.css';
@@ -62,7 +62,7 @@ function Main() {
       <Grid item xs={fileSystem?.explorerTree.length == 0 ? 12 : 9}>
         <Stack spacing={3}>
           <EditorPanel 
-            height={windowHeight}
+            height={windowHeight - TERMINAL_HEIGHT - 24}
           />
           <TerminalComponent />
         </Stack>

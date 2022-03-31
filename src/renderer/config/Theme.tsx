@@ -63,7 +63,7 @@ export function useColorScheme(): ThemeStyle {
     return ThemeStyle[scheme as keyof typeof ThemeStyle];
 }
 
-interface iTheme {
+export interface iTheme {
     colors: {
         toolbarBackground: string,
         explorerBackground: string,
