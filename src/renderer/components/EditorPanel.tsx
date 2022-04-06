@@ -1,10 +1,11 @@
-import { Tabs, Tab, Box, Grid } from '@mui/material';  
-import { Add } from '@mui/icons-material';
+import { Tabs, Tab, Box, Grid, Stack } from '@mui/material';  
+import { Add, Close, SentimentSatisfiedAltSharp } from '@mui/icons-material';
 import React, { SyntheticEvent } from 'react';
 import EditorComponent from './Editor';
 import { AppFile, useFileSystem } from './FileSystem';
 import { useTheme } from '../config/Theme';
-
+import { IconButton } from '@mui/material';
+import { Console } from 'console';
 export const TABS_HEIGHT = 35;
 
 interface TabPanelProps {
@@ -56,6 +57,13 @@ export default function EditorPanel(props: iEditorPanelProps) {
     }
   };
 
+  const handleTabClose = (event: SyntheticEvent<Element, Event>, tabId: number) => {    
+    fileSystem?.closeFile(tabId);
+    if (tabId > 0) {
+      fileSystem?.setCurrentFileIdx(tabId - 1);
+    }
+  }
+
   const tabsValue = fileSystem?.currentFileIdx || 0;
 
   return (
@@ -79,12 +87,37 @@ export default function EditorPanel(props: iEditorPanelProps) {
             style={{
               fontSize: '12px',
               // padding: '0',
+              paddingRight: '5px',
               minHeight: `${TABS_HEIGHT}px`,
               height: `${TABS_HEIGHT}px`,
               color: tabsValue === index ? theme.text.color : 'grey',
               backgroundColor: tabsValue === index ? theme.colors.editorBackground : 'inherit'
             }}
-            label={f.name} 
+            label={
+              <Stack direction="row" alignItems="center">
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  height="100%"
+                  textAlign="center"
+                  lineHeight="normal"
+                >
+                  {f.name}
+                </Box> 
+                <Box
+                  paddingLeft="5px"
+                  onClick={(e) => handleTabClose(e, index)}
+                >
+                  <Close 
+                    fontSize="small" 
+                    style={{
+                      color : theme.text.color, 
+                    }}
+                  />
+                </Box>
+              </Stack> 
+            } 
             key={index}
             {...a11yProps(index)} 
           />

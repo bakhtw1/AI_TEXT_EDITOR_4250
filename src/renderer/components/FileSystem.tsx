@@ -112,6 +112,7 @@ interface IAppFileSystem {
     setCurrentRenamingTreeItem: (item: FileTreeItem | null) => void,
     renameTreeItem: (newName: string) => void,
     updateFileTree: () => void,
+    closeFile: (fileId: number) => void,
 }
 
 const FileSystemContext = createContext<IAppFileSystem | null>(null);
@@ -203,6 +204,19 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         });
 
         setFiles(newFiles);
+    }
+
+    function closeFile(fileId: number) {
+        const allFiles = [...files];
+        const openFiles = [];
+
+        for (let i = 0; i < allFiles.length; i++) {
+            if (i !== fileId) {
+                openFiles.push(allFiles[i]);
+            }
+        }
+        
+        setFiles(openFiles);
     }
 
     function updateFileTree() {
@@ -300,6 +314,7 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         setCurrentRenamingTreeItem,
         renameTreeItem,
         updateFileTree,
+        closeFile
     }
 
     return (
