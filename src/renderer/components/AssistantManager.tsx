@@ -105,13 +105,20 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     async function openAIRequest(data: string): Promise<string> {
         const dataBody = { 
             prompt : data,
-            engine : oaiModel,
             secret : oaiToken
         };
+        
         console.log(dataBody);
-        const res = await httpRequest.post(cacheBuster("/predictOpenAI") , dataBody);
+        const res = await httpRequest.post(cacheBuster("/document") , dataBody);
         console.log(res.data);
-        return res.data.choices[0].text as string;
+
+        let result : string[] = [];
+
+        for (var i = 0; i < res.data.choices.length; i++) {
+            result.push(res.data.choices[i].text);
+        }
+
+        return result.join("\n");
     }
 
     function setOAIParams(token : string, model : string) {
@@ -156,7 +163,7 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
 
         let mode: number = 0;
         console.log("here: " + line);
-        if (line.trim().endsWith('Use OpenAI')) {
+        if (line.trim().endsWith('Document')) {
             console.log('Using openai');
             mode = 1;    
         }

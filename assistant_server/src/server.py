@@ -25,7 +25,7 @@ model = ServerModel.auto()
 def prompts():
     return jsonify([
         'Generate function body',
-        'Use OpenAI'
+        'Document'
     ])
 
 
@@ -59,7 +59,7 @@ def openAIEngines():
     return engines
 
 @app.route('/predictOpenAI', methods=['POST'])
-def document():
+def useOpenAI():
     request_data = request.get_json()
     data = request_data['prompt']
     engine = request_data['engine']
@@ -78,6 +78,23 @@ def document():
     )
 
     return response
+
+@app.route('/document', methods=['POST'])
+def document():
+    request_data = request.get_json()
+    data = request_data['prompt']
+    secret = request_data['secret']
+
+    openai.api_key = secret
+
+    response = openai.Edit.create(
+      engine="code-davinci-edit-001",
+      input=data,
+      instruction="Comment the code"
+    )
+    
+    return response
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001, use_reloader=False)
