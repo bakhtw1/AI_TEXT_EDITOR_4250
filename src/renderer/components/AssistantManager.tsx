@@ -81,7 +81,6 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     }
 
     async function getOAIEngines(secret : string): Promise<string[]> {
-        console.log("Here: ", oaiToken, oaiModel);
         if (!secret || secret.length === 0) {
             return [];
         }
@@ -122,7 +121,6 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     }
 
     function setOAIParams(token : string, model : string) {
-        console.log("Setting params: ", token, model);
         setOaiToken(token);
         setOaiModel(model);
     }
