@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as mon from 'monaco-editor';
+import { Configuration, OpenAIApi } from 'openai'; 
 
 export const KEY_PHRASE = '@ai-help';
 const SERVER_HOST = "http://127.0.0.1:5001";
@@ -14,6 +15,8 @@ interface IAssistantManager {
     execute: (editor: mon.editor.IStandaloneCodeEditor) => void,
     available: boolean,
     getAssists: () => Promise<string[]>,
+    getOAIEngines: (secret : string) => Promise<string[]>,
+    setOAIParams: (token : string, model : string) => void,
 }
 
 const AssistantManagerContext = createContext<IAssistantManager | null>(null);
@@ -28,6 +31,8 @@ interface AssistantManagerProviderProps {
 
 export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     const [available, setAvailable] = useState(false);
+    const [oaiToken, setOaiToken] = useState('');
+    const [oaiModel, setOaiModel] = useState('');
 
     useEffect(() => {
         function waitForAvailable() {
@@ -63,18 +68,56 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
 
     async function getAssists(): Promise<string[]> {
         const res = await httpRequest.get(cacheBuster('/prompts'));
-
         return res.data as string[];
     }
 
     async function getHealth(): Promise<boolean> {
         try {
             await httpRequest.get(cacheBuster('/health'));
-
             return true;
         } catch {
             return false;
         }
+    }
+
+    async function getOAIEngines(secret : string): Promise<string[]> {
+        console.log("Here: ", oaiToken, oaiModel);
+        if (!secret || secret.length === 0) {
+            return [];
+        }
+
+        const params = new URLSearchParams([
+            ['secret' , secret],
+        ]);
+
+        const res = await httpRequest.get(cacheBuster("/openAIEngines"), { params });
+        console.log(res.data);
+        var data : string[] = [];
+
+
+        for (var i = 0; i < res.data.data.length; i++) {
+            data.push(res.data.data[i].id);
+        }
+
+        return data;
+    }
+
+    async function openAIRequest(data: string): Promise<string> {
+        const dataBody = { 
+            prompt : data,
+            engine : oaiModel,
+            secret : oaiToken
+        };
+        console.log(dataBody);
+        const res = await httpRequest.post(cacheBuster("/predictOpenAI") , dataBody);
+        console.log(res.data);
+        return res.data.choices[0].text as string;
+    }
+
+    function setOAIParams(token : string, model : string) {
+        console.log("Setting params: ", token, model);
+        setOaiToken(token);
+        setOaiModel(model);
     }
 
     function handleEditorValueChange(editor: mon.editor.IStandaloneCodeEditor, value: string) {
@@ -111,6 +154,13 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
             return;
         }
 
+        let mode: number = 0;
+        console.log("here: " + line);
+        if (line.trim().endsWith('Use OpenAI')) {
+            console.log('Using openai');
+            mode = 1;    
+        }
+
         let data = "";
         let loopLine = "";
         let i = position!.lineNumber - 1;
@@ -122,9 +172,19 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
             i += 1;
         } while (i < lines.length && loopLine.trim() != '');
 
-        data = data.slice(KEY_PHRASE.length).trim();
-
-        const result = await sendRequest(data);
+        
+        let result = "";
+        
+        switch (mode) {
+            case 1:
+                data = data.slice(KEY_PHRASE.length + 9).trim(); //length of ' Document'
+                result = await openAIRequest(data);
+                break;
+            default:
+                data = data.slice(KEY_PHRASE.length).trim();
+                result = await sendRequest(data);
+                break;
+        }
 
         let newValue = lines.slice(0, position!.lineNumber - 1).join('\n');
         newValue += '\n' + result;
@@ -140,6 +200,8 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         execute,
         available,
         getAssists,
+        getOAIEngines,
+        setOAIParams
     }
 
     return (

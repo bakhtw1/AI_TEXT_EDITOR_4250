@@ -6,6 +6,8 @@ import { AppFile, useFileSystem } from './FileSystem';
 import { useTheme } from '../config/Theme';
 import { IconButton } from '@mui/material';
 import { Console } from 'console';
+import OAIMenuModal from './OAIMenuModal';
+import { width } from '@mui/system';
 export const TABS_HEIGHT = 35;
 
 interface TabPanelProps {
@@ -68,72 +70,76 @@ export default function EditorPanel(props: iEditorPanelProps) {
 
   return (
     <div>
-      <Tabs
-        value={tabsValue}
-        onChange={handleTabChange}
-        variant="scrollable"
-        style={{
-          height: `${TABS_HEIGHT}px`,
-          minHeight: `${TABS_HEIGHT}px`
-        }}
-        TabIndicatorProps={{
-          style: {
-              display: "none",
-          },
-        }}
-      >
-        {fileSystem?.files.map((f: AppFile, index: number) => 
+      <Stack direction="row">
+        <Tabs
+          value={tabsValue}
+          onChange={handleTabChange}
+          variant="scrollable"
+          style={{
+            height: `${TABS_HEIGHT}px`,
+            minHeight: `${TABS_HEIGHT}px`,
+            width: '95%',
+          }}
+          TabIndicatorProps={{
+            style: {
+                display: "none",
+            },
+          }}
+        >
+          {fileSystem?.files.map((f: AppFile, index: number) => 
+            <Tab 
+              style={{
+                fontSize: '12px',
+                // padding: '0',
+                paddingRight: '5px',
+                minHeight: `${TABS_HEIGHT}px`,
+                height: `${TABS_HEIGHT}px`,
+                color: tabsValue === index ? theme.text.color : 'grey',
+                backgroundColor: tabsValue === index ? theme.colors.editorBackground : 'inherit'
+              }}
+              label={
+                <Stack direction="row" alignItems="center">
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    height="100%"
+                    textAlign="center"
+                    lineHeight="normal"
+                  >
+                    {f.name}
+                  </Box> 
+                  <Box
+                    paddingLeft="5px"
+                    onClick={(e) => handleTabClose(e, index)}
+                  >
+                    <Close 
+                      fontSize="small" 
+                      style={{
+                        color : theme.text.color, 
+                      }}
+                    />
+                  </Box>
+                </Stack> 
+              } 
+              key={index}
+              {...a11yProps(index)} 
+            />
+          )}
           <Tab 
+            icon={<Add sx={{color: '#808080'}} fontSize='small' />} 
+            value={-1}
             style={{
-              fontSize: '12px',
               // padding: '0',
-              paddingRight: '5px',
               minHeight: `${TABS_HEIGHT}px`,
               height: `${TABS_HEIGHT}px`,
-              color: tabsValue === index ? theme.text.color : 'grey',
-              backgroundColor: tabsValue === index ? theme.colors.editorBackground : 'inherit'
+              minWidth: `${TABS_HEIGHT}px`,
+              width: `${TABS_HEIGHT}px`
             }}
-            label={
-              <Stack direction="row" alignItems="center">
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  height="100%"
-                  textAlign="center"
-                  lineHeight="normal"
-                >
-                  {f.name}
-                </Box> 
-                <Box
-                  paddingLeft="5px"
-                  onClick={(e) => handleTabClose(e, index)}
-                >
-                  <Close 
-                    fontSize="small" 
-                    style={{
-                      color : theme.text.color, 
-                    }}
-                  />
-                </Box>
-              </Stack> 
-            } 
-            key={index}
-            {...a11yProps(index)} 
           />
-        )}
-        <Tab 
-          icon={<Add sx={{color: '#808080'}} fontSize='small' />} 
-          value={-1}
-          style={{
-            // padding: '0',
-            minHeight: `${TABS_HEIGHT}px`,
-            height: `${TABS_HEIGHT}px`,
-            minWidth: `${TABS_HEIGHT}px`,
-            width: `${TABS_HEIGHT}px`
-          }}
-        />
-      </Tabs> 
+        </Tabs> 
+        <OAIMenuModal />
+      </Stack>
       <Box>
         {fileSystem?.files.map((f: AppFile, index: number) => 
           <TabPanel value={fileSystem.currentFileIdx} index={index} key={index}>
