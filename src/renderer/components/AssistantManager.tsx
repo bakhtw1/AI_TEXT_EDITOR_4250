@@ -14,6 +14,13 @@ interface IAssistantManager {
     execute: (editor: mon.editor.IStandaloneCodeEditor) => void,
     available: boolean,
     getAssists: () => Promise<string[]>,
+    setOAIParams: (token : string) => void,
+}
+
+enum AIQueryType {
+    documentation,
+    fullCompletion,
+    quickCompletion
 }
 
 const AssistantManagerContext = createContext<IAssistantManager | null>(null);
@@ -28,6 +35,7 @@ interface AssistantManagerProviderProps {
 
 export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     const [available, setAvailable] = useState(false);
+    const [oaiToken, setOaiToken] = useState('');
 
     useEffect(() => {
         function waitForAvailable() {
@@ -63,18 +71,46 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
 
     async function getAssists(): Promise<string[]> {
         const res = await httpRequest.get(cacheBuster('/prompts'));
-
         return res.data as string[];
     }
 
     async function getHealth(): Promise<boolean> {
         try {
             await httpRequest.get(cacheBuster('/health'));
-
             return true;
         } catch {
             return false;
         }
+    }
+
+    async function openAIRequest(data: string): Promise<string | null> {
+        const dataBody = { 
+            prompt : data,
+            secret : oaiToken,
+        };
+        
+        console.log(dataBody);
+        const res = await httpRequest.post(cacheBuster("/oai-document") , dataBody);
+        console.log(res.data);
+
+        // let result : string[] = [];
+
+        // for (var i = 0; i < res.data.choices.length; i++) {
+        //     result.push(res.data.choices[i].text);
+        // }
+
+        // return result.join("\n");
+
+        let choices = res.data.choices;
+        if (choices.length == 0) {
+            return null;
+        }
+
+        return choices[0].text;
+    }
+
+    function setOAIParams(token : string) {
+        setOaiToken(token);
     }
 
     function handleEditorValueChange(editor: mon.editor.IStandaloneCodeEditor, value: string) {
@@ -111,9 +147,19 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
             return;
         }
 
+        let queryType = AIQueryType.fullCompletion;
+
+        if (line.trim().endsWith('Generate Code Documentation')) {
+            queryType = AIQueryType.documentation;  
+        } else if (line.trim().endsWith('Perform Code Completion')) {
+            queryType = AIQueryType.fullCompletion;
+        } else {
+            return;
+        }
+
         let data = "";
         let loopLine = "";
-        let i = position!.lineNumber - 1;
+        let i = position!.lineNumber;
 
         do {
             loopLine = lines[i];
@@ -121,13 +167,22 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
 
             i += 1;
         } while (i < lines.length && loopLine.trim() != '');
+        
+        let result = "";
+        data = data.trim();
+        
+        switch (queryType) {
+            case AIQueryType.documentation:
+                result = (await openAIRequest(data))!;
+                break;
 
-        data = data.slice(KEY_PHRASE.length).trim();
-
-        const result = await sendRequest(data);
+            case AIQueryType.fullCompletion:
+                result = await sendRequest(data);
+                break;
+        }
 
         let newValue = lines.slice(0, position!.lineNumber - 1).join('\n');
-        newValue += '\n' + result;
+        newValue += result;
         newValue += '\n' + lines.slice(i).join('\n');
 
         console.log(newValue);
@@ -140,6 +195,7 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         execute,
         available,
         getAssists,
+        setOAIParams
     }
 
     return (

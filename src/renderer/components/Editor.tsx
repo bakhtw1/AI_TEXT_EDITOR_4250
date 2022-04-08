@@ -1,5 +1,5 @@
 import React, { useRef, KeyboardEvent, useEffect, useState } from 'react';
-import Editor, {Monaco, loader } from "@monaco-editor/react";
+import Editor, { Monaco, loader } from "@monaco-editor/react";
 import path from 'path';
 import * as mon from 'monaco-editor';
 import { extensions } from '../config/extensions';
