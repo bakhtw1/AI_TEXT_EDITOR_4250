@@ -25,8 +25,8 @@ class GPTNeo(ServerModel):
         if self.pt_cuda_available:
             self.model = self.model.to('cuda')
 
-    def generate(self, text):
-        input_ids = self.tokenizer(text, 
+    def generate(self, texts):
+        input_ids = self.tokenizer(texts, 
             return_tensors="pt").input_ids
 
         if self.pt_cuda_available:
@@ -38,5 +38,10 @@ class GPTNeo(ServerModel):
             temperature=0.9,
             max_length=100)
 
-        return self.tokenizer.batch_decode(gen_tokens)[0]
+        results = self.tokenizer.batch_decode(gen_tokens)
+
+        if len(results) == 1:
+            return results[0]
+
+        return results
 

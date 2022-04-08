@@ -14,6 +14,7 @@ interface IAssistantManager {
     execute: (editor: mon.editor.IStandaloneCodeEditor) => void,
     getAssists: () => Promise<string[]>,
     setOAIParams: (token : string) => void,
+    getSuggestions: (data: string) => Promise<string[]>,
 }
 
 enum AIQueryType {
@@ -50,6 +51,30 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         const result = res.data as string;
 
         return result.split('\n\n')[0];
+    }
+
+    async function getSuggestions(data: string): Promise<string[]> {
+        const available = await getHealth();
+        if (!available) {
+            return [];
+        }
+
+        let dataBody: QueryData = {
+            prompt : data
+        };
+
+        console.log('before');
+
+        // let res = {
+        //     data: ['test']
+        // }
+
+        const res = await httpRequest.post(cacheBuster("/quick-predict"), dataBody);
+
+        console.log('after');
+        console.log(res.data);
+        
+        return res.data.results as string[];
     }
 
     async function getAssists(): Promise<string[]> {
@@ -102,19 +127,7 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     }
 
     function handleEditorValueChange(editor: mon.editor.IStandaloneCodeEditor, value: string) {
-        const contentPosition = editor.getPosition();
-        const contentLines = value.split('\n');
-
-        const line = contentLines[contentPosition!.lineNumber - 1];
-        if (line.length < KEY_PHRASE.length) {
-            return;
-        }
-
-        const keyPhraseBuffer = line.slice(contentPosition!.column - KEY_PHRASE.length, contentPosition!.column);
-
-        if (keyPhraseBuffer == KEY_PHRASE) {
-            editor.trigger(null, 'editor.action.triggerSuggest', {});
-        }
+        editor.trigger(null, 'editor.action.triggerSuggest', {});
     }
 
     async function execute(editor: mon.editor.IStandaloneCodeEditor) {
@@ -187,7 +200,8 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         handleEditorValueChange,
         execute,
         getAssists,
-        setOAIParams
+        setOAIParams,
+        getSuggestions
     }
 
     return (

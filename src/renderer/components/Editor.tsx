@@ -88,11 +88,34 @@ export default function EditorComponent(props: EditorProps) {
           endColumn: position.column + 1
         };
 
+        const lineRange: mon.IRange = {
+          startLineNumber: position.lineNumber,
+          startColumn: 0,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column + 1
+        }
+
         const buffer = model.getValueInRange(range);
+        const line = model.getValueInRange(lineRange);
 
         if (buffer != KEY_PHRASE) {
+          const texts = await assistantManager!.getSuggestions(line);
+
+          console.log(texts);
+
+          const suggestions = texts.map(function(s): mon.languages.CompletionItem {
+            return {
+              label: s,
+              kind: monaco.languages.CompletionItemKind.Text,
+              insertText: s,
+              range: lineRange
+            }
+          });
+
+          console.log(suggestions);
+
           return {
-            suggestions: []
+            suggestions
           };
         }
 
@@ -139,7 +162,6 @@ export default function EditorComponent(props: EditorProps) {
       } finally {
         editorRef.current?.updateOptions({ readOnly: false });
       }
-      
     }
   };
 
