@@ -224,7 +224,7 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         let newExplorerTree = [...explorerTree];
 
         for (const file of files) {
-            if (!currentPaths.includes(file.path)) {
+            if (!currentPaths.includes(file.path) && !file.isNewFile) {
                 newExplorerTree.push(new FileTreeItem(file.path, false));
             }
         }
