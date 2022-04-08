@@ -3,41 +3,31 @@ import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit';
 import { ipcRenderer } from "electron";
 import 'xterm/css/xterm.css';
-import { iTheme, ThemeStyle, useColorScheme, useTheme } from "../config/Theme";
+import { iTheme, useTheme } from "../config/Theme";
 
 export const TERMINAL_HEIGHT = 320;
 
 interface _TerminalComponentProps {
-    colorScheme: ThemeStyle;
     theme: iTheme;
 }
 
 class _TerminalComponent extends React.Component<_TerminalComponentProps> {
     terminalRef: RefObject<HTMLDivElement>;
     terminal!: Terminal;
-
-    colorScheme: ThemeStyle;
-    theme: iTheme;
     
     constructor(props: _TerminalComponentProps) {
         super(props);
 
-        this.colorScheme = props.colorScheme;
-        this.theme = props.theme;
-
         this.terminalRef = createRef();
+
+        console.log('create terminal');
         
         this.terminal = new Terminal({
             cursorBlink: true, 
             rendererType: 'canvas',
             screenReaderMode: true, 
             convertEol: true,
-            cols: 80, 
-            theme: {
-                background: this.theme.colors.editorBackground,
-                foreground: this.theme.text.color,
-                cursor: this.theme.text.color
-            }
+            cols: 80,
         });
 
         this.terminal.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ');
@@ -52,6 +42,7 @@ class _TerminalComponent extends React.Component<_TerminalComponentProps> {
     }
 
     componentDidMount() {
+        console.log('mount');
         if (this.terminalRef.current) {
             const fitAddon = new FitAddon();
             this.terminal.loadAddon(fitAddon); 
@@ -65,10 +56,18 @@ class _TerminalComponent extends React.Component<_TerminalComponentProps> {
     }
     
     render() {
+        this.terminal.options.theme = {
+            background: this.props.theme.colors.editorBackground,
+            foreground: this.props.theme.text.color,
+            cursor: this.props.theme.text.color
+        };
+
+        // console.log(this.terminal.options.theme);
+        
         return (
             <div 
                 style={{
-                    backgroundColor: this.theme.colors.editorBackground,
+                    backgroundColor: this.props.theme.colors.editorBackground,
                     height: TERMINAL_HEIGHT
                 }} 
                 id="terminal" 
@@ -79,12 +78,10 @@ class _TerminalComponent extends React.Component<_TerminalComponentProps> {
 }
 
 export default function TerminalComponent() {
-    const colorScheme = useColorScheme();
     const theme = useTheme();
 
     return (
         <_TerminalComponent 
-            colorScheme={colorScheme}
             theme={theme}
         />
     )

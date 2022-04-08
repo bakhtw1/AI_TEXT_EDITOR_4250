@@ -1,112 +1,154 @@
 import React, { useEffect, useState, ChangeEvent } from 'react';
 import Typography from '@mui/material/Typography';
-import { Box, Button, Modal, Stack } from '@mui/material';
+import { Box, Button, InputLabel, Modal, Stack, styled, TextFieldProps } from '@mui/material';
 import { TextField, MenuItem } from '@mui/material';
 import { useAssistantManager } from './AssistantManager';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { ipcRenderer } from 'electron';
+import { ThemeStyle, useColorScheme, useTheme } from '../config/Theme';
 
-const style = {
-  position: 'absolute' as 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-};
+const StyledTextField = styled((props: TextFieldProps) => {
+  return <TextField {...props} />
+})(() => {
+  const colorScheme = useColorScheme();
+  const theme = useTheme();
+
+  return {
+    '& label': {
+      color: colorScheme === ThemeStyle.light ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+    },
+    '& label.Mui-focused': {
+      color: theme.text.color,
+    },
+    '& .MuiInput-underline:after': {
+      borderBottomColor: theme.text.color,
+    },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: theme.text.color,
+      },
+      '&:hover fieldset': {
+        borderColor: theme.text.color,
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: theme.text.color,
+      },
+      '& .MuiOutlinedInput-input': {
+        color: theme.text.color
+      }
+    },
+  };
+});
 
 export default function OAIMenuModal() {
   const [open, setOpen] = useState(false);
   const [tokenField, setTokenField] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
-  const [selected, setSelected] = useState('');
-  const [engineList, setEngineList] = useState<string[]>([]);
+  // const [selectedModel, setSelectedModel] = useState('');
   const assistantManager = useAssistantManager();
 
-  async function initEngineList() {
-    
-    console.log(tokenField)
-    const result = await assistantManager?.getOAIEngines(tokenField);
-    if (result) { 
-      console.log(result);
-      if (result.length > 0) {
-        setEngineList(result); 
-      }
-      // else {
-      //   initEngineList();
-      // }
-    }   
-    
-  }
+  const theme = useTheme();
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
+    ipcRenderer.invoke('get-config').then(() => null);
 
+    ipcRenderer.on('settings-open', () => {
+      setOpen(true);
+    });
 
-    initEngineList();
+    ipcRenderer.on('loaded-config', (event, data) => {
+      const token = data.openAI.token;
+
+      setTokenField(token);
+      assistantManager?.setOAIParams(token);
+    });
   }, []);
 
-  const handleOpen = () => setOpen(true);
+  // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
-  const handleChange = (event: SelectChangeEvent) => {
-    setSelected(event.target.value);
-    setSelectedModel(engineList[Number(event.target.value)]);
-  }
 
   const handleTokenChange = (event: ChangeEvent<HTMLInputElement>) => {    
     setTokenField(event.target.value);
-    
   }
 
   const handleSubmit = () => {
-    initEngineList();
-    assistantManager?.setOAIParams(tokenField, selectedModel);
+    assistantManager?.setOAIParams(tokenField);
+
+    ipcRenderer.invoke('set-config', {
+      openAI: {
+        token: tokenField
+      }
+    })
+
     handleClose();
   }
 
   return (
     <div>
-      <Button onClick={handleOpen}>
+      {/* <Button onClick={handleOpen}>
         OpenAI
-      </Button>
+      </Button> */}
       <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          <Typography paddingBottom="15px" id="modal-modal-title" variant="h6" component="h2">
-            OpenAI Assistant Settings
+        <Box sx={{
+          position: 'absolute' as 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          // border: '2px solid #000',
+          backgroundColor: theme.colors.editorBackground,
+          boxShadow: 24,
+          p: 4,
+        }}>
+          <Typography 
+            id="modal-modal-title" 
+            variant="h6" 
+            fontWeight={600}
+            fontSize={24}
+            color={colorScheme === ThemeStyle.light ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)'}
+            component="h2"
+          >
+            Settings
+          </Typography>
+          <hr style={{
+            height: '1px',
+            backgroundColor: colorScheme === ThemeStyle.light ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+            border: 'none',
+          }} />
+          <Typography 
+            paddingBottom="15px" 
+            variant="h6" 
+            fontSize={14}
+            fontWeight={600}
+            color={theme.text.color}
+            component="h4"
+          >
+            OpenAI Configuration
           </Typography>
           <Stack direction="column" spacing="15px">
-            <TextField 
+            <StyledTextField 
               id="outlined-basic" 
-              label="enter OpenAI token" 
+              label="API Token" 
               variant="outlined" 
               value={tokenField}
               onChange={handleTokenChange}
+              size='small'
             />
-            <Select
-              labelId="demo-simple-select-standard-label"
-              id="demo-simple-select-standard"
-              value={selected}
-              onChange={handleChange}
-              label="Engine"
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {engineList.map((engine : string, idx : number) => 
-                <MenuItem key={idx} value={idx}>{engine}</MenuItem>)}
-            </Select>
+            <hr style={{
+              height: '1px',
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              border: 'none',
+            }} />
             <Button 
               variant='contained' 
               fullWidth={false} 
               onClick={handleSubmit}>
-                Submit
+                Save
             </Button>
           </Stack>
         </Box>

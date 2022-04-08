@@ -24,8 +24,8 @@ model = ServerModel.auto()
 @app.route('/prompts', methods=['GET'])
 def prompts():
     return jsonify([
-        'Generate function body',
-        'Document'
+        'Perform Code Completion',
+        'Generate Code Documentation',
     ])
 
 
@@ -50,36 +50,30 @@ def predict():
 
     return generated
 
-@app.route('/openAIEngines', methods=['GET'])
-def openAIEngines():
-    request_data = request.args
-    secret = request_data['secret']
-    openai.api_key = secret
-    engines = openai.Engine.list()
-    return engines
 
-@app.route('/predictOpenAI', methods=['POST'])
-def useOpenAI():
-    request_data = request.get_json()
-    data = request_data['prompt']
-    engine = request_data['engine']
-    secret = request_data['secret']
+# @app.route('/predictOpenAI', methods=['POST'])
+# def useOpenAI():
+#     request_data = request.get_json()
+#     data = request_data['prompt']
+#     engine = request_data['engine']
+#     secret = request_data['secret']
 
-    openai.api_key = secret
+#     openai.api_key = secret
 
-    response = openai.Completion.create(
-      engine=engine,
-      prompt=data,
-      temperature=0,
-      max_tokens=len(data)*2,
-      top_p=1.0,
-      frequency_penalty=0.0,
-      presence_penalty=0.0,
-    )
+#     response = openai.Completion.create(
+#       engine=engine,
+#       prompt=data,
+#       temperature=0,
+#       max_tokens=len(data)*2,
+#       top_p=1.0,
+#       frequency_penalty=0.0,
+#       presence_penalty=0.0,
+#     )
 
-    return response
+#     return response
 
-@app.route('/document', methods=['POST'])
+
+@app.route('/oai-document', methods=['POST'])
 def document():
     request_data = request.get_json()
     data = request_data['prompt']
@@ -90,7 +84,7 @@ def document():
     response = openai.Edit.create(
       engine="code-davinci-edit-001",
       input=data,
-      instruction="Comment the code"
+      instruction="Add documentation"
     )
     
     return response
