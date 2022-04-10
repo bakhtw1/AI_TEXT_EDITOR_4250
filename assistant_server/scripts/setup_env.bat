@@ -3,8 +3,8 @@ set BASEPATH=%1
 
 if %BASEPATH% EQU "" set BASEPATH=.
 
-start python3.exe -m venv %BASEPATH%\venv
+python3 -m venv %BASEPATH%\venv
 
 call %BASEPATH%\venv\Scripts\activate.bat
-start pip.exe install -r %BASEPATH%\requirements.txt
+pip install -r %BASEPATH%\requirements.txt
 echo "Finished setting up"

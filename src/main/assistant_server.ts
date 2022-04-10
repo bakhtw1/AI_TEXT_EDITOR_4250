@@ -16,7 +16,7 @@ function setup() {
         return;
     }
     console.log("setting up venv"); 
-    spawnSync(SHELL, 
+    const setupProcess = spawnSync(SHELL, 
         [   
             path.join(BASE_PATH, SETUP_SCRIPT),
             BASE_PATH
@@ -26,11 +26,6 @@ function setup() {
 function start() {
     setup();
     console.log(SHELL);
-
-    while (!fs.existsSync(path.join(BASE_PATH, 'venv'))) {
-        console.log("waiting for venv to be set up");
-        setTimeout(() => {}, 1000);
-    }
 
     const serverProcess = spawn(SHELL, 
         [
