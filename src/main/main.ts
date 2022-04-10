@@ -139,9 +139,9 @@ function createWindow() {
     mainWindow = null;
   });
 
-  if (isMac) {
+  // if (isMac) {
     assistantServer.start();
-  }
+  // }
 
   ipcMain.handle('set-config', async (event, data) => {
     await fsp.writeFile(path.join(__dirname, 'config.json'), JSON.stringify(data));

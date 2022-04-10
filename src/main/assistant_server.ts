@@ -1,28 +1,40 @@
 import path from 'path';
 import { spawn, spawnSync } from 'child_process';
 import fs from 'fs';
+import os from 'os';
 
 const BASE_PATH = path.join(__dirname, 'assistant');
+const SHELL = os.platform() === "win32" ? "powershell.exe" : "bash";
+
+const SETUP_SCRIPT = os.platform() === "win32" ? "setup_env.bat" : "setup_env.sh";
+const RUN_SCRIPT = os.platform() === "win32" ? "run_model_server.bat" : "run_model_server.sh";
 
 function setup() {
     const alreadySetUp = fs.existsSync(path.join(BASE_PATH, 'venv'));
     if (alreadySetUp) {
+        console.log("venv already set up");
         return;
     }
-
-    spawnSync('bash', 
+    console.log("setting up venv"); 
+    spawnSync(SHELL, 
         [   
-            path.join(BASE_PATH, 'setup_env.sh'),
+            path.join(BASE_PATH, SETUP_SCRIPT),
             BASE_PATH
-        ])
+        ]);
 }
 
 function start() {
     setup();
+    console.log(SHELL);
 
-    const serverProcess = spawn('bash', 
+    while (!fs.existsSync(path.join(BASE_PATH, 'venv'))) {
+        console.log("waiting for venv to be set up");
+        setTimeout(() => {}, 1000);
+    }
+
+    const serverProcess = spawn(SHELL, 
         [
-            path.join(BASE_PATH, 'run_model_server.sh'),
+            path.join(BASE_PATH, RUN_SCRIPT),
             BASE_PATH
         ]);
     
