@@ -6,7 +6,6 @@ import { extensions } from '../config/extensions';
 import { AppFile, useFileSystem } from './FileSystem';
 import { KEY_PHRASE, useAssistantManager } from './AssistantManager';
 import { ThemeStyle, useColorScheme, useTheme } from '../config/Theme';
-
 interface EditorProps {
   file: AppFile,
   height: number,
@@ -78,6 +77,40 @@ export default function EditorComponent(props: EditorProps) {
 
   function handleEditorDidMount(editor: mon.editor.IStandaloneCodeEditor, monaco: Monaco) {
     editorRef.current = editor; 
+
+    editor.updateOptions({
+      renderWhitespace: 'all',
+    });
+
+    editor.addAction({ 
+      id: 'tab-size-action-2',
+      label: 'Set Tab Size : 2',
+      run: (ed : mon.editor.IStandaloneCodeEditor) => {
+        ed.updateOptions({
+          tabSize: 2,
+        })
+      }
+    });
+    
+    editor.addAction({ 
+      id: 'tab-size-action-3',
+      label: 'Set Tab Size : 3',
+      run: (ed : mon.editor.IStandaloneCodeEditor) => {
+        ed.updateOptions({
+          tabSize: 3,
+        })
+      }
+    });
+
+    editor.addAction({ 
+      id: 'tab-size-action-4',
+      label: 'Set Tab Size : 4',
+      run: (ed : mon.editor.IStandaloneCodeEditor) => {
+        ed.updateOptions({
+          tabSize: 4,
+        })
+      }
+    });
 
     completionItemProvider = monaco.languages.registerCompletionItemProvider(language, {
       provideCompletionItems: async function(model, position) {

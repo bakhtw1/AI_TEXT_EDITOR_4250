@@ -45,7 +45,7 @@ export default function OAIMenuModal() {
   const [tokenField, setTokenField] = useState('');
   // const [selectedModel, setSelectedModel] = useState('');
   const assistantManager = useAssistantManager();
-
+  
   const theme = useTheme();
   const colorScheme = useColorScheme();
 
@@ -58,6 +58,7 @@ export default function OAIMenuModal() {
 
     ipcRenderer.on('loaded-config', (event, data) => {
       const token = data.openAI.token;
+      const tabSize = data.openAI.tabSize;
 
       setTokenField(token);
       assistantManager?.setOAIParams(token);
@@ -77,8 +78,8 @@ export default function OAIMenuModal() {
     ipcRenderer.invoke('set-config', {
       openAI: {
         token: tokenField
-      }
-    })
+      },
+    });
 
     handleClose();
   }
@@ -120,17 +121,18 @@ export default function OAIMenuModal() {
             backgroundColor: colorScheme === ThemeStyle.light ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
             border: 'none',
           }} />
-          <Typography 
-            paddingBottom="15px" 
-            variant="h6" 
-            fontSize={14}
-            fontWeight={600}
-            color={theme.text.color}
-            component="h4"
-          >
-            OpenAI Configuration
-          </Typography>
-          <Stack direction="column" spacing="15px">
+          
+          <Stack direction="column" spacing="5px">
+            <Typography 
+              // paddingBottom="15px" 
+              variant="h6" 
+              fontSize={14}
+              fontWeight={600}
+              color={theme.text.color}
+              component="h4"
+            >
+              OpenAI Configuration
+            </Typography>
             <StyledTextField 
               id="outlined-basic" 
               label="API Token" 
@@ -139,18 +141,18 @@ export default function OAIMenuModal() {
               onChange={handleTokenChange}
               size='small'
             />
-            <hr style={{
-              height: '1px',
-              backgroundColor: 'rgba(0, 0, 0, 0.1)',
-              border: 'none',
-            }} />
-            <Button 
-              variant='contained' 
-              fullWidth={false} 
-              onClick={handleSubmit}>
-                Save
-            </Button>
           </Stack>
+          <hr style={{
+            height: '1px',
+            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+            border: 'none',
+          }} />
+          <Button 
+            variant='contained' 
+            fullWidth={false} 
+            onClick={handleSubmit}>
+              Save
+          </Button>
         </Box>
       </Modal>
     </div>
