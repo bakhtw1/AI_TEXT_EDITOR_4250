@@ -1,8 +1,9 @@
-import { app, BrowserWindow, Menu } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import * as path from "path";
 import * as url from "url";
 import createTermProcess from "./terminal";
-
+import fsp from 'fs/promises';
+import fs from 'fs';
 
 import assistantServer from './assistant_server';
 import fileSystem from './file_system';
@@ -15,6 +16,18 @@ const applicationMenuTemplate: any[] = [
   label: app.name,
   submenu: [
       { role: 'about' },
+      { type: 'separator' },
+      { 
+        label: 'Preferences',
+        submenu: [
+          {
+            label: 'Settings',
+            click: function() {
+              mainWindow!.webContents.send('settings-open');
+            }
+          }
+        ]
+      },
       { type: 'separator' },
       { role: 'services' },
       { type: 'separator' },
@@ -45,8 +58,55 @@ const applicationMenuTemplate: any[] = [
               click: function() {
                   mainWindow!.webContents.send('menu-save-as');
               },
-          }
+          },
+          ...(!isMac ? [
+            { type: 'separator' },
+            {
+              label: 'Settings',
+              click: function() {
+                mainWindow!.webContents.send('settings-open');
+              }
+            }
+          ] : []),
       ]
+  },
+  {
+    label: "Edit",
+    submenu: [
+      {
+        label: "Undo",
+        accelerator: "CmdOrCtrl+Z",
+        selector: "undo:"
+      },
+      {
+        label: "Redo",
+        accelerator: "Shift+CmdOrCtrl+Z",
+        selector: "redo:"
+      },
+      {
+        type: "separator"
+      },
+      {
+        label: "Cut",
+        accelerator: "CmdOrCtrl+X",
+        selector: "cut:"
+      },
+      {
+        label: "Copy",
+        accelerator: "CmdOrCtrl+C",
+        selector: "copy:"
+      },
+      {
+        label: "Paste",
+        accelerator: "CmdOrCtrl+V",
+        selector: "paste:"
+      },
+      {
+        label: "Select All",
+        accelerator: "CmdOrCtrl+A",
+        selector: "selectAll:"
+      }
+    ]
   }
 ];
 
@@ -82,6 +142,23 @@ function createWindow() {
   if (isMac) {
     assistantServer.start();
   }
+
+  ipcMain.handle('set-config', async (event, data) => {
+    await fsp.writeFile(path.join(__dirname, 'config.json'), JSON.stringify(data));
+  });
+
+  ipcMain.handle('get-config', async () => {
+    const configFilepath = path.join(__dirname, 'config.json');
+
+    if (!fs.existsSync(configFilepath)) {
+      return;
+    }
+
+    const data = await fsp.readFile(configFilepath, 'utf-8');
+
+    const mainWindow = BrowserWindow.getFocusedWindow();
+    mainWindow?.webContents.send('loaded-config', JSON.parse(data));
+  });
   
   fileSystem.setupHandlers();
   createTermProcess(mainWindow);

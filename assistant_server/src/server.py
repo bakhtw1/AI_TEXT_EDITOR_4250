@@ -3,7 +3,7 @@ from flask_cors import CORS
 
 from models import ServerModel
 from database import Result, db
-
+import openai 
 
 def create_app():
     app = Flask(__name__)
@@ -24,7 +24,8 @@ model = ServerModel.auto()
 @app.route('/prompts', methods=['GET'])
 def prompts():
     return jsonify([
-        'Generate function body'
+        'Perform Code Completion',
+        'Generate Code Documentation',
     ])
 
 
@@ -48,6 +49,45 @@ def predict():
     db.session.commit()
 
     return generated
+
+
+# @app.route('/predictOpenAI', methods=['POST'])
+# def useOpenAI():
+#     request_data = request.get_json()
+#     data = request_data['prompt']
+#     engine = request_data['engine']
+#     secret = request_data['secret']
+
+#     openai.api_key = secret
+
+#     response = openai.Completion.create(
+#       engine=engine,
+#       prompt=data,
+#       temperature=0,
+#       max_tokens=len(data)*2,
+#       top_p=1.0,
+#       frequency_penalty=0.0,
+#       presence_penalty=0.0,
+#     )
+
+#     return response
+
+
+@app.route('/oai-document', methods=['POST'])
+def document():
+    request_data = request.get_json()
+    data = request_data['prompt']
+    secret = request_data['secret']
+
+    openai.api_key = secret
+
+    response = openai.Edit.create(
+      engine="code-davinci-edit-001",
+      input=data,
+      instruction="Add documentation"
+    )
+    
+    return response
 
 
 if __name__ == '__main__':

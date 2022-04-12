@@ -3,3 +3,4 @@ transformers
 flask
 flask_cors
 Flask-SQLAlchemy
+openai

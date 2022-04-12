@@ -84,12 +84,6 @@ export default function EditorComponent(props: EditorProps) {
 
     completionItemProvider = monaco.languages.registerCompletionItemProvider(language, {
       provideCompletionItems: async function(model, position) {
-        if (!assistantManager?.available) {
-          return {
-            suggestions: [],
-          };
-        }
-
         const range: mon.IRange = {
           startLineNumber: position.lineNumber, 
           startColumn: position.column - KEY_PHRASE.length + 1, 
@@ -105,7 +99,16 @@ export default function EditorComponent(props: EditorProps) {
           };
         }
 
-        const assists = await assistantManager.getAssists();
+        let assists;
+
+        try {
+          assists = await assistantManager!.getAssists();
+        } catch {
+          return {
+            suggestions: []
+          };
+        }
+        
         const suggestions = assists.map(function (a): mon.languages.CompletionItem {
           return {
             label: KEY_PHRASE + ' ' + a,
@@ -131,7 +134,6 @@ export default function EditorComponent(props: EditorProps) {
 
     if (event.shiftKey && (event.code === 'Enter' || event.code === 'NumpadEnter')) {
       editorRef.current?.updateOptions({ readOnly: true });
-
       try {
         console.log("Executing");
         setProgressStatus(true);

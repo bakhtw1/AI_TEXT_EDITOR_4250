@@ -38,6 +38,12 @@ const config: Configuration = {
           'style-loader',
           'css-loader'
         ]
+      },
+      {
+        test: /\.node$/,
+        use: {
+          loader: "node-loader",
+        }
       }
     ],
   },
