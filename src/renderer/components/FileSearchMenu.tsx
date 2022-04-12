@@ -1,8 +1,8 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
+import React, { useState, ChangeEvent, useEffect, KeyboardEvent } from 'react';
 import { Box, Icon, IconButton, Stack, TextField, TextFieldProps, styled, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import { ThemeStyle, useColorScheme, useTheme } from '../config/Theme';
-import { useFileSystem } from './FileSystem';
+import { FileTreeItem, useFileSystem } from './FileSystem';
 
 const StyledTextField = styled((props: TextFieldProps) => {
     return <TextField {...props} />
@@ -59,6 +59,23 @@ export default function FileSearchMenu(props: iFileSearchMenuProps) {
         }
     }
 
+    const handleKeyDown = async (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.code === 'Enter') {
+        await handleSubmit();
+      }
+    }
+
+    const handleResultClick = async (path: string) => {
+      const openPaths = fileSystem?.files.map((af) => af.path);
+      const openIdx = openPaths!.indexOf(path);
+
+      if (openIdx === -1) {
+          await fileSystem?.open(new FileTreeItem(path, false));
+      } else {
+          fileSystem?.setCurrentFileIdx(openIdx);
+      }
+    }
+
     return (
         <Box height={props.height} padding="15px">
             <Stack direction="row">
@@ -69,6 +86,7 @@ export default function FileSearchMenu(props: iFileSearchMenuProps) {
                   size='small'
                   fullWidth={true}
                   onChange={handleSearchTermChange}
+                  onKeyDown={handleKeyDown}
                 />
                 <IconButton 
                     onClick={handleSubmit}
@@ -80,9 +98,19 @@ export default function FileSearchMenu(props: iFileSearchMenuProps) {
                 {results!.map((result, index) => (
                     <ListItemButton 
                         key={index}
+                        onClick={() => handleResultClick(result)}
                     >
                         <ListItemText 
-                            sx={{color: theme.text.color}} 
+                            sx={{
+                              color: theme.text.color
+                            }} 
+                            primaryTypographyProps={{
+                              fontSize: '12px',
+                              style: {
+                                whiteSpace: 'normal',
+                                wordWrap: 'break-word'
+                              }
+                            }}
                             primary={result}
                         />
                     </ListItemButton>
