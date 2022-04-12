@@ -1,5 +1,5 @@
 import React, { useRef, KeyboardEvent, useEffect, useState } from 'react';
-import Editor, {Monaco, loader } from "@monaco-editor/react";
+import Editor, { Monaco, loader } from "@monaco-editor/react";
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import path from 'path';
@@ -132,11 +132,14 @@ export default function EditorComponent(props: EditorProps) {
     if (event.shiftKey && (event.code === 'Enter' || event.code === 'NumpadEnter')) {
       editorRef.current?.updateOptions({ readOnly: true });
 
-      console.log("Executing");
-      setProgressStatus(true)
-      await assistantManager?.execute(editorRef.current!);
-      setProgressStatus(false)
-      editorRef.current?.updateOptions({ readOnly: false });
+      try {
+        console.log("Executing");
+        setProgressStatus(true);
+        await assistantManager?.execute(editorRef.current!);
+      } finally {
+        editorRef.current?.updateOptions({ readOnly: false });
+        setProgressStatus(false);
+      }
     }
   };
 
