@@ -13,6 +13,8 @@ import { ipcRenderer, Menu } from 'electron';
 import TextField from '@mui/material/TextField';
 import { ThemeStyle, useColorScheme, useTheme } from '../config/Theme';
 import { TABS_HEIGHT } from './EditorPanel';
+import FileSearchMenu from './FileSearchMenu';
+import { TERMINAL_HEIGHT } from './TerminalPanel';
 
 const StyledTreeItemRoot = styled(function CustomTreeItem(props: TreeItemProps & {item: FileTreeItem}) {
     return (
@@ -175,6 +177,9 @@ export default function FileTreePanel(props: iFileTreePanelProps) {
             >
                 {_treeBuilder(fileSystem!.explorerTree)}
             </TreeView>
+            <FileSearchMenu 
+                height={TERMINAL_HEIGHT}
+            />
         </div>
     );
 }

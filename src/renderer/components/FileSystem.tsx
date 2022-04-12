@@ -113,6 +113,7 @@ interface IAppFileSystem {
     renameTreeItem: (newName: string) => void,
     updateFileTree: () => void,
     closeFile: (fileId: number) => void,
+    searchDirectory: (searchTerm: string) => Promise<string[]>,
 }
 
 const FileSystemContext = createContext<IAppFileSystem | null>(null);
@@ -301,6 +302,41 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         setCurrentRenamingTreeItem(null);
     }
 
+    async function searchFile(searchTerm: string, filePath: string) {
+        const file = await fs.readFile(filePath, 'utf8');
+        if (file.indexOf(searchTerm) !== -1) {
+            return true;
+        }
+        return false;
+    }
+
+    async function searchDirectory(searchTerm : string) {
+
+        let stack = [[...explorerTree]];
+
+        let results : string[] = [];
+
+        while (stack.length > 0) {
+            const curLevel = stack.pop()!;
+            let nextLevel : FileTreeItem[] = [];
+            for (const item of curLevel) {
+                if (item.directory) {
+                    nextLevel = nextLevel.concat(item.children);
+                }
+                else {
+                    if (await searchFile(searchTerm, item.path)) {
+                        results.push(item.path);
+                    }
+                }
+            }
+            if (nextLevel.length > 0) {
+                stack.push(nextLevel);
+            }
+        }
+        
+        return results;
+    }
+
     const fileSystem: IAppFileSystem = {
         files,
         open,
@@ -314,7 +350,8 @@ export function FileSystemProvider(props: FileSystemProviderProps) {
         setCurrentRenamingTreeItem,
         renameTreeItem,
         updateFileTree,
-        closeFile
+        closeFile,
+        searchDirectory
     }
 
     return (

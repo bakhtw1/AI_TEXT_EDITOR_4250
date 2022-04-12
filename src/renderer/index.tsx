@@ -55,7 +55,7 @@ function Main() {
       {fileSystem!.explorerTree.length > 0 && (
         <Grid item xs={3}>
           <FileTreePanel 
-            height={windowHeight}
+            height={windowHeight - TERMINAL_HEIGHT}
           />
         </Grid>
       )}
