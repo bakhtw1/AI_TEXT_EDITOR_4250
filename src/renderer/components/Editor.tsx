@@ -1,5 +1,7 @@
 import React, { useRef, KeyboardEvent, useEffect, useState } from 'react';
 import Editor, { Monaco, loader } from "@monaco-editor/react";
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
 import path from 'path';
 import * as mon from 'monaco-editor';
 import { extensions } from '../config/extensions';
@@ -32,6 +34,7 @@ export default function EditorComponent(props: EditorProps) {
   const theme = useTheme();
   const fileSystem = useFileSystem();
   const assistantManager = useAssistantManager();
+  const [progressStatus, setProgressStatus] = useState(false);
 
   let completionItemProvider: mon.IDisposable | null = null;
 
@@ -131,20 +134,24 @@ export default function EditorComponent(props: EditorProps) {
 
     if (event.shiftKey && (event.code === 'Enter' || event.code === 'NumpadEnter')) {
       editorRef.current?.updateOptions({ readOnly: true });
-
-      console.log("Executing");
-
       try {
+        console.log("Executing");
+        setProgressStatus(true);
         await assistantManager?.execute(editorRef.current!);
       } finally {
         editorRef.current?.updateOptions({ readOnly: false });
+        setProgressStatus(false);
       }
-      
     }
   };
 
   return(
     <div onKeyDown={keyDownHandle}>
+      {progressStatus &&
+        <Box sx={{ width: '100%' }}>
+          <LinearProgress/>
+        </Box>
+      }
       <Editor
         height={props.height}
         theme={colorScheme == ThemeStyle.dark ? "vs-dark" : 'light'}
