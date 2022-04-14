@@ -24,8 +24,6 @@ def create_app():
 app = create_app()
 
 rt_model = RealtimeModel.auto()
-rt_model.start_worker()
-
 full_model = FullGenerationModel.auto()
 
 
@@ -50,14 +48,9 @@ def quick_predict():
     if len(prompt) == 0:
         return '', 400
 
-    rt_model(prompt)
-    results = rt_model.wait_for_results()
+    results = rt_model.get_suggestions(prompt)
 
-    print(results, file=sys.stdout, flush=True)
-
-    return jsonify({
-        'results': results
-    })
+    return jsonify(results)
 
 
 @app.route('/predict', methods=['POST'])

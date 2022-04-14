@@ -23,10 +23,19 @@ function uriFromPath(_path: string) {
 
   return encodeURI("file://" + ensureFirstBackSlash(pathName));
 }
+
+class EditorSignalMark {
+  suggestions: number;
+
+  constructor() {
+    this.suggestions = 0;
+  }
+}
   
 export default function EditorComponent(props: EditorProps) {
   const path_to_monaco = "node_modules/monaco-editor/min/vs";
   const editorRef = useRef<mon.editor.IStandaloneCodeEditor | null>(null);
+  const mark = useRef<EditorSignalMark>(new EditorSignalMark());
 
   const colorScheme = useColorScheme();
   const theme = useTheme();
@@ -69,7 +78,7 @@ export default function EditorComponent(props: EditorProps) {
 
   function handleEditorChange(value: string, event: any) {
     fileSystem?.updateFile(props.file, value);
-    assistantManager?.handleEditorValueChange(editorRef.current!, value);
+    assistantManager?.handleEditorValueChange(editorRef.current!, value, mark);
   }
 
   function handleEditorWillMount(monaco: Monaco) {
@@ -80,7 +89,10 @@ export default function EditorComponent(props: EditorProps) {
     editorRef.current = editor; 
 
     completionItemProvider = monaco.languages.registerCompletionItemProvider(language, {
-      provideCompletionItems: async function(model, position) {
+      provideCompletionItems: async function(model, position, context, token) {
+        console.log(context);
+        console.log(mark);
+
         const range: mon.IRange = {
           startLineNumber: position.lineNumber, 
           startColumn: position.column - KEY_PHRASE.length + 1, 
@@ -99,6 +111,14 @@ export default function EditorComponent(props: EditorProps) {
         const line = model.getValueInRange(lineRange);
 
         if (buffer != KEY_PHRASE) {
+          if (line[0] == '@' || mark.current.suggestions == 0) {
+            return {
+              suggestions: []
+            }
+          }
+
+          mark.current.suggestions = 0;
+
           const texts = await assistantManager!.getSuggestions(line);
 
           console.log(texts);

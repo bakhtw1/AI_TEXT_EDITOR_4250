@@ -10,7 +10,7 @@ function cacheBuster(url: string): string {
 }
 
 interface IAssistantManager {
-    handleEditorValueChange: (editor: mon.editor.IStandaloneCodeEditor, value: string) => void,
+    handleEditorValueChange: (editor: mon.editor.IStandaloneCodeEditor, value: string, mark: any) => void,
     execute: (editor: mon.editor.IStandaloneCodeEditor) => void,
     getAssists: () => Promise<string[]>,
     setOAIParams: (token : string) => void,
@@ -35,6 +35,7 @@ interface AssistantManagerProviderProps {
 
 export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     const [oaiToken, setOaiToken] = useState('');
+    let quickPredictTimeout: NodeJS.Timeout | null = null;
 
     const httpRequest = axios.create({
         baseURL: SERVER_HOST,
@@ -74,7 +75,7 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         console.log('after');
         console.log(res.data);
         
-        return res.data.results as string[];
+        return res.data as string[];
     }
 
     async function getAssists(): Promise<string[]> {
@@ -126,8 +127,21 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         setOaiToken(token);
     }
 
-    function handleEditorValueChange(editor: mon.editor.IStandaloneCodeEditor, value: string) {
-        editor.trigger(null, 'editor.action.triggerSuggest', {});
+    function handleEditorValueChange(editor: mon.editor.IStandaloneCodeEditor, value: string, mark: any) {
+        if (quickPredictTimeout != null) {
+            console.log('cancelling old suggestions request.');
+
+            clearTimeout(quickPredictTimeout);
+        }
+
+        quickPredictTimeout = setTimeout(() => {
+            console.log('Getting suggestions.');
+
+            mark.current.suggestions = 1;
+            console.log(mark);
+
+            editor.trigger(null, 'editor.action.triggerSuggest', {});
+        }, 5000);
     }
 
     async function execute(editor: mon.editor.IStandaloneCodeEditor) {
