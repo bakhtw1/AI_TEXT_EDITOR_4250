@@ -26,6 +26,7 @@ let iconTable : { [key: string]: any } = {
     'py' : DiPython,
     'html' : DiHtml5,
     'tsx': SiTypescript,
+    'ts': SiTypescript,
     'js': SiJavascript,
     'java': DiJava,
     'txt': TextSnippetIcon,
