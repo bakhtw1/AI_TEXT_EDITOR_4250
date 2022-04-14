@@ -95,7 +95,7 @@ export default function EditorComponent(props: EditorProps) {
 
         const range: mon.IRange = {
           startLineNumber: position.lineNumber, 
-          startColumn: position.column - KEY_PHRASE.length + 1, 
+          startColumn: position.column - KEY_PHRASE.length, 
           endLineNumber: position.lineNumber, 
           endColumn: position.column + 1
         };
@@ -109,7 +109,7 @@ export default function EditorComponent(props: EditorProps) {
 
         const buffer = model.getValueInRange(range);
         const line = model.getValueInRange(lineRange);
-
+        console.log(buffer)
         if (buffer != KEY_PHRASE) {
           if (line[0] == '@' || mark.current.suggestions == 0) {
             return {
