@@ -166,7 +166,6 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   }
 
-  assistantServer.start();
 }
 
 // This method will be called when Electron has finished
@@ -190,3 +189,5 @@ app.on("activate", () => {
     createWindow();
   }
 });
+
+assistantServer.start();
