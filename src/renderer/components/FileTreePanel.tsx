@@ -6,6 +6,12 @@ import TreeItem, { treeItemClasses, TreeItemProps } from '@mui/lab/TreeItem';
 import Typography from '@mui/material/Typography';
 import FolderIcon from '@mui/icons-material/Folder';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
+import { DiPython } from "react-icons/di";
+import { DiJava } from "react-icons/di";
+import { DiHtml5 } from "react-icons/di";
+import { SiTypescript } from "react-icons/si";
+import { SiJavascript } from "react-icons/si";
+import { VscFolder} from "react-icons/vsc";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { useFileSystem, FileTreeItem } from './FileSystem';
@@ -15,6 +21,15 @@ import { ThemeStyle, useColorScheme, useTheme } from '../config/Theme';
 import { TABS_HEIGHT } from './EditorPanel';
 import FileSearchMenu from './FileSearchMenu';
 import { TERMINAL_HEIGHT } from './TerminalPanel';
+
+let iconTable : { [key: string]: any } = { 
+    'py' : DiPython,
+    'html' : DiHtml5,
+    'tsx': SiTypescript,
+    'js': SiJavascript,
+    'java': DiJava,
+    'txt': TextSnippetIcon,
+}
 
 const StyledTreeItemRoot = styled(function CustomTreeItem(props: TreeItemProps & {item: FileTreeItem}) {
     return (
@@ -90,6 +105,16 @@ function StyledTreeItem(props: StyledTreeItemProps) {
             }
         })
     }, [fileSystem?.currentRenamingTreeItem]);
+    
+    let icon;
+    if (item.directory){
+        icon = VscFolder
+    }else{
+        let extension = item.name.split('.').pop();
+        if (extension!=undefined){
+            icon = iconTable[extension]
+        }
+    }
 
     return (
         <StyledTreeItemRoot
@@ -115,7 +140,7 @@ function StyledTreeItem(props: StyledTreeItemProps) {
             }}
             label={
                 <Box sx={{ display: 'flex', alignItems: 'center', p: 0.2, pr: 0 }}>
-                    <Box component={item.directory ? FolderIcon : TextSnippetIcon} color="inherit" fontSize='16px' sx={{ mr: 1 }} />
+                    <Box component={icon} color="inherit" fontSize='16px' sx={{ mr: 1 }} />
                     {item.path === fileSystem?.currentRenamingTreeItem?.path ? (
                         <TextField 
                             variant="outlined"
