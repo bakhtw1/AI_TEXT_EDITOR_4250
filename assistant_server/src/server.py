@@ -1,9 +1,13 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import threading
+import time
+import sys
 
-from models import ServerModel
+from models import RealtimeModel, FullGenerationModel
 from database import Result, db
 import openai 
+
 
 def create_app():
     app = Flask(__name__)
@@ -18,7 +22,9 @@ def create_app():
 
 
 app = create_app()
-model = ServerModel.auto()
+
+rt_model = RealtimeModel.auto()
+full_model = FullGenerationModel.auto()
 
 
 @app.route('/prompts', methods=['GET'])
@@ -34,12 +40,25 @@ def health():
     return ''
 
 
+@app.route('/quick-predict', methods=['POST'])
+def quick_predict():
+    request_data = request.get_json()
+    prompt = request_data['prompt']
+
+    if len(prompt) == 0:
+        return '', 400
+
+    results = rt_model.get_suggestions(prompt)
+
+    return jsonify(results)
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
     request_data = request.get_json()
     prompt = request_data['prompt']
 
-    generated = model.generate(prompt)
+    generated = full_model.generate(prompt)
 
     r = Result(
         prompt=prompt,

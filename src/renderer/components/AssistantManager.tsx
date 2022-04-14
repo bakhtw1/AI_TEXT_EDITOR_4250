@@ -10,10 +10,11 @@ function cacheBuster(url: string): string {
 }
 
 interface IAssistantManager {
-    handleEditorValueChange: (editor: mon.editor.IStandaloneCodeEditor, value: string) => void,
+    handleEditorValueChange: (editor: mon.editor.IStandaloneCodeEditor, value: string, mark: any) => void,
     execute: (editor: mon.editor.IStandaloneCodeEditor) => void,
     getAssists: () => Promise<string[]>,
     setOAIParams: (token : string) => void,
+    getSuggestions: (data: string) => Promise<string[]>,
 }
 
 enum AIQueryType {
@@ -34,6 +35,7 @@ interface AssistantManagerProviderProps {
 
 export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
     const [oaiToken, setOaiToken] = useState('');
+    let quickPredictTimeout: NodeJS.Timeout | null = null;
 
     const httpRequest = axios.create({
         baseURL: SERVER_HOST,
@@ -50,6 +52,30 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         const result = res.data as string;
 
         return result.split('\n\n')[0];
+    }
+
+    async function getSuggestions(data: string): Promise<string[]> {
+        const available = await getHealth();
+        if (!available) {
+            return [];
+        }
+
+        let dataBody: QueryData = {
+            prompt : data
+        };
+
+        console.log('before');
+
+        // let res = {
+        //     data: ['test']
+        // }
+
+        const res = await httpRequest.post(cacheBuster("/quick-predict"), dataBody);
+
+        console.log('after');
+        console.log(res.data);
+        
+        return res.data as string[];
     }
 
     async function getAssists(): Promise<string[]> {
@@ -101,20 +127,21 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         setOaiToken(token);
     }
 
-    function handleEditorValueChange(editor: mon.editor.IStandaloneCodeEditor, value: string) {
-        const contentPosition = editor.getPosition();
-        const contentLines = value.split('\n');
+    function handleEditorValueChange(editor: mon.editor.IStandaloneCodeEditor, value: string, mark: any) {
+        if (quickPredictTimeout != null) {
+            console.log('cancelling old suggestions request.');
 
-        const line = contentLines[contentPosition!.lineNumber - 1];
-        if (line.length < KEY_PHRASE.length) {
-            return;
+            clearTimeout(quickPredictTimeout);
         }
 
-        const keyPhraseBuffer = line.slice(contentPosition!.column - KEY_PHRASE.length, contentPosition!.column);
+        quickPredictTimeout = setTimeout(() => {
+            console.log('Getting suggestions.');
 
-        if (keyPhraseBuffer == KEY_PHRASE) {
+            mark.current.suggestions = 1;
+            console.log(mark);
+
             editor.trigger(null, 'editor.action.triggerSuggest', {});
-        }
+        }, 5000);
     }
 
     async function execute(editor: mon.editor.IStandaloneCodeEditor) {
@@ -187,7 +214,8 @@ export function AssistantManagerProvider(props: AssistantManagerProviderProps) {
         handleEditorValueChange,
         execute,
         getAssists,
-        setOAIParams
+        setOAIParams,
+        getSuggestions
     }
 
     return (

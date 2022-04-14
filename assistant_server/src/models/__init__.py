@@ -1,1 +1,2 @@
-from .model import ServerModel
+from .model import RealtimeModel
+from .model import FullGenerationModel
